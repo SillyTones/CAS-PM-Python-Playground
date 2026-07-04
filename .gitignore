@@ -1,0 +1,14 @@
+# Ignore everything by default. This repo only tracks the QM-tracking
+# Streamlit app and its domain model; the process-analysis notebooks/data
+# (Datenanalyse/, xlsx exports, MAS_BEM venv, project docs) are local
+# context only and never go to GitHub.
+*
+
+!.gitignore
+!qm_app_enhanced.py
+!qm_app_phase_minus1.py
+!qm_model.py
+!qm_data_reader.py
+!qm_sample_data.json
+!QM-App.py
+!requirements.txt

@@ -110,7 +110,7 @@ def generate_qm_nummer():
     jahr = datetime.now().year % 100  # Letzte zwei Ziffern des Jahres
     nummer = st.session_state.qm_counter
     st.session_state.qm_counter += 1
-    return f"{jahr}QM{nummer:03d}"
+    return f"{jahr}QM{nummer:05d}"
 
 def create_qm(formular_daten):
     """Erstellt einen neuen QM-Eintrag"""
@@ -211,11 +211,9 @@ def render_formular_field(field_name, field_config):
 # ============================================================================
 # VIEWS
 # ============================================================================
-
+@st.dialog("📝 Neuen Qualitätsmangel erfassen",width="medium")
 def view_formular():
-    """QM-Erfassungsformular"""
-    st.header("📝 Neuen Qualitätsmangel erfassen")
-    
+    """QM-Erfassungsformular"""    
     with st.form("qm_formular", clear_on_submit=True):
         formular_daten = {}
         
