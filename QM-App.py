@@ -87,15 +87,19 @@ STATUS_ICON = {
 }
 PRIORITAET_FARBE = {"Niedrig": "gray", "Mittel": "blue", "Hoch": "orange", "Kritisch": "red"}
 
-# Board-Spalten (Buckets). Pausiert/Abgebrochen werden der Nachbarspalte zugeschlagen,
-# die Karte selbst zeigt aber weiterhin ihren echten Status.
-BOARD_SPALTEN = [
-    QMStatus.NEU.value, QMStatus.IN_PRUEFUNG.value, QMStatus.ZUGEWIESEN.value,
-    QMStatus.IN_BEARBEITUNG.value, QMStatus.BEHOBEN.value, QMStatus.ABGESCHLOSSEN.value,
-]
-SPALTE_FUER_STATUS = {
-    QMStatus.PAUSIERT.value: QMStatus.IN_BEARBEITUNG.value,
-    QMStatus.ABGEBROCHEN.value: QMStatus.ABGESCHLOSSEN.value,
+# Board-Phasen: die 9 Status werden zu 3 groben Phasen zusammengefasst, damit das Board
+# übersichtlich bleibt. Jede Karte zeigt trotzdem ihren echten Status (Caption).
+BOARD_PHASEN = ["📥 Neu", "🔧 In Arbeit", "✅ Erledigt"]
+PHASE_FUER_STATUS = {
+    QMStatus.NEU.value: "📥 Neu",
+    QMStatus.IN_PRUEFUNG.value: "📥 Neu",
+    QMStatus.WIEDEREROEFFNET.value: "📥 Neu",
+    QMStatus.ZUGEWIESEN.value: "🔧 In Arbeit",
+    QMStatus.IN_BEARBEITUNG.value: "🔧 In Arbeit",
+    QMStatus.PAUSIERT.value: "🔧 In Arbeit",
+    QMStatus.BEHOBEN.value: "✅ Erledigt",
+    QMStatus.ABGESCHLOSSEN.value: "✅ Erledigt",
+    QMStatus.ABGEBROCHEN.value: "✅ Erledigt",
 }
 
 # Felder je Prozessschritt - gleichzeitig die editierbaren Felder solange der QM in
@@ -114,6 +118,23 @@ STATUS_FELDER = {
     QMStatus.BEHOBEN.value: ["software_referenz_release", "hardware_aenderungsindex"],
 }
 NEU_FELDER = STATUS_FELDER[QMStatus.NEU.value]
+
+# Felder, die erst erscheinen, wenn ihr Auslöser-Feld True ist (z.B. PLC Version nur,
+# wenn PLC angekreuzt ist). Der Auslöser muss in der jeweiligen Feldliste vorher stehen.
+FELD_ABHAENGIGKEIT = {
+    "plc": "ist_software",
+    "nc": "ist_software",
+    "mcm": "ist_software",
+    "plc_version": "plc",
+    "nc_version": "nc",
+    "ticket_nr_intern": "kundenrueckmeldung_noetig",
+    "kontaktperson_servicetechniker": "kundenrueckmeldung_noetig",
+    "ticket_nr_extern": "bearbeitung_extern",
+    "korrespondenz_extern": "bearbeitung_extern",
+}
+
+# Werden nie als Eingabefeld angezeigt, sondern automatisch aus den Login-Infos gesetzt.
+AUTOMATISCHE_FELDER = {"erfasser_kuerzel", "erfasser_abteilung"}
 
 ABTEILUNGSNAMEN = [a.value["name"] for a in ABTEILUNGEN]
 
@@ -189,6 +210,19 @@ def hat_recht(recht):
     return RECHTE.SUPERUSER in rechte or recht in rechte
 
 
+def nur_erfasser(abteilung=None):
+    # Abteilungen wie Montage/Kundendienst haben ausschliesslich ERFASSEN: für sie ist das
+    # Board/Bucket/Statistik nur Ballast - sie sollen einfach nur einen QM melden können.
+    abteilung = abteilung or aktuelle_abteilung()
+    return bool(abteilung) and abteilung.value["Rechte"] == {RECHTE.ERFASSEN}
+
+
+def hat_bucket():
+    # Bucket nur zeigen, wenn die Abteilung auch tatsächlich Ziel einer Kategorie ist -
+    # sonst ist er immer leer und damit nutzlos.
+    return hat_recht(RECHTE.BEARBEITEN) and aktuelle_abteilung() in KATEGORIE_ABTEILUNG.values()
+
+
 def finde_qm(qm_id):
     for qm in st.session_state.qm_liste:
         if qm.qm_id == qm_id:
@@ -203,6 +237,10 @@ def naechste_qm_id():
 
 def naechste_qm_nummer():
     return f"QM-{date.today().year}-{naechste_qm_id():03d}"
+
+
+def kuerzel(name):
+    return "".join(w[0] for w in name.split()).upper()
 
 
 def render_field(name, config, value, key):
@@ -223,6 +261,21 @@ def render_field(name, config, value, key):
     return value
 
 
+def render_feld_gruppe(felder, werte_quelle, key_prefix):
+    """Rendert Felder nacheinander (kein st.form, damit Checkboxen sofort einen Rerun
+    auslösen). Abhängige Felder (FELD_ABHAENGIGKEIT) erscheinen erst, wenn ihr Auslöser
+    - der davor in derselben Liste gerendert wurde - aktuell True ist."""
+    werte = {}
+    for f in felder:
+        if f in AUTOMATISCHE_FELDER:
+            continue
+        trigger = FELD_ABHAENGIGKEIT.get(f)
+        if trigger and not werte.get(trigger):
+            continue
+        werte[f] = render_field(f, FORMULAR_CONFIG[f], werte_quelle(f), key=f"{key_prefix}_{f}")
+    return werte
+
+
 def oeffne_details(qm_id):
     st.session_state.detail_qm_id = qm_id
 
@@ -236,6 +289,7 @@ def view_login():
     if st.button("Anmelden", type="primary"):
         st.session_state.current_user = person
         st.session_state.current_abteilung_key = abteilung.name
+        st.session_state.view = "meine_qms" if nur_erfasser(abteilung) else "board"
         st.rerun()
 
 
@@ -272,11 +326,8 @@ def render_status_wechsel(qm):
 def render_karte(qm, key_prefix):
     with st.container(border=True):
         st.markdown(f"**{qm.qm_nummer}**  \n{qm.titel}")
-        badge_farbe = PRIORITAET_FARBE.get(qm.prioritaet, "gray")
-        st.badge(qm.prioritaet, color=badge_farbe)
-        st.caption(f"{qm.hauptkategorie}" + (f" · {qm.zugewiesen_an}" if qm.zugewiesen_an else ""))
-        if qm.status in SPALTE_FUER_STATUS:
-            st.caption(f"{STATUS_ICON.get(qm.status, '')} {qm.status}")
+        st.badge(qm.prioritaet, color=PRIORITAET_FARBE.get(qm.prioritaet, "gray"))
+        st.caption(f"{STATUS_ICON.get(qm.status, '')} {qm.status} · {qm.hauptkategorie}")
         if st.button("Öffnen", key=f"{key_prefix}_{qm.qm_id}", use_container_width=True):
             oeffne_details(qm.qm_id)
 
@@ -289,15 +340,36 @@ def view_board():
         s = suche.lower()
         qm_liste = [qm for qm in qm_liste if s in qm.titel.lower() or s in qm.qm_nummer.lower()]
 
-    spalten = st.columns(len(BOARD_SPALTEN))
-    for spalte, status in zip(spalten, BOARD_SPALTEN):
+    spalten = st.columns(len(BOARD_PHASEN))
+    for spalte, phase in zip(spalten, BOARD_PHASEN):
         with spalte:
-            st.markdown(f"**{STATUS_ICON.get(status, '')} {status}**")
-            treffer = [qm for qm in qm_liste if SPALTE_FUER_STATUS.get(qm.status, qm.status) == status]
+            st.markdown(f"**{phase}**")
+            treffer = [qm for qm in qm_liste if PHASE_FUER_STATUS.get(qm.status) == phase]
             if not treffer:
                 st.caption("–")
             for qm in treffer:
                 render_karte(qm, key_prefix="board_open")
+
+
+# ---------- Meine QMs (für Abteilungen mit ausschliesslich ERFASSEN) ----------
+
+def view_meine_qms():
+    st.header("📄 Meine QMs")
+    st.caption("QMs, die du erfasst hast oder die dir zugewiesen sind.")
+    if st.button("➕ Neuen QM erfassen", type="primary"):
+        st.session_state.view = "neu"
+        st.rerun()
+    user = aktueller_user()
+    meine = [qm for qm in st.session_state.qm_liste if qm.ersteller == user or qm.zugewiesen_an == user]
+    if not meine:
+        st.info("Du bist aktuell an keinem QM beteiligt.")
+        return
+    for qm in meine:
+        with st.container(border=True):
+            st.markdown(f"**{qm.qm_nummer}** – {qm.titel}")
+            st.caption(f"{STATUS_ICON.get(qm.status, '')} {qm.status} · {qm.hauptkategorie}")
+            if st.button("Öffnen", key=f"meine_{qm.qm_id}", use_container_width=True):
+                oeffne_details(qm.qm_id)
 
 
 # ---------- Mein Bucket ----------
@@ -339,26 +411,28 @@ def view_bucket():
 
 def view_neuer_qm():
     st.header("➕ Neuen Qualitätsmangel erfassen")
-    vorbelegung = {
-        "erfasser_kuerzel": "".join(w[0] for w in aktueller_user().split()).upper(),
-        "erfasser_abteilung": aktuelle_abteilung().value["name"],
-    }
-    with st.form("neuer_qm"):
-        werte = {
-            name: render_field(name, FORMULAR_CONFIG[name], vorbelegung.get(name), key=f"neu_{name}")
-            for name in NEU_FELDER
-        }
-        abgesendet = st.form_submit_button("✅ Erfassen", type="primary")
+    st.caption(f"Erfasst durch {aktueller_user()} ({aktuelle_abteilung().value['name']})")
 
-    if not abgesendet:
+    werte = render_feld_gruppe(NEU_FELDER, lambda f: None, key_prefix="neu")
+
+    if not st.button("✅ Erfassen", type="primary"):
         return
-    if not werte["titel"] or not werte["beschreibung"]:
+    if not werte.get("titel") or not werte.get("beschreibung"):
         st.error("Titel und Mangelbeschreibung sind Pflichtfelder.")
         return
 
-    qm = QualitaetsMangel(qm_id=naechste_qm_id(), qm_nummer=naechste_qm_nummer(), ersteller=aktueller_user(), **werte)
+    qm = QualitaetsMangel(
+        qm_id=naechste_qm_id(),
+        qm_nummer=naechste_qm_nummer(),
+        ersteller=aktueller_user(),
+        erfasser_kuerzel=kuerzel(aktueller_user()),
+        erfasser_abteilung=aktuelle_abteilung().value["name"],
+        **werte,
+    )
     st.session_state.qm_liste.append(qm)
     st.success(f"{qm.qm_nummer} wurde erfasst.")
+    if nur_erfasser():
+        st.session_state.view = "meine_qms"
     oeffne_details(qm.qm_id)
 
 
@@ -368,19 +442,21 @@ def render_editierbare_felder(qm):
     felder = STATUS_FELDER.get(qm.status, [])
     if not felder or not hat_recht(RECHTE.BEARBEITEN):
         return
-    with st.form(f"felder_{qm.qm_id}_{qm.status}"):
-        werte = {f: render_field(f, FORMULAR_CONFIG[f], getattr(qm, f), key=f"f_{qm.qm_id}_{f}") for f in felder}
-        if st.form_submit_button("💾 Speichern"):
-            for f, w in werte.items():
-                setattr(qm, f, w)
-            qm.add_history_entry(HistoryEntryType.BEARBEITET.value, "Angaben aktualisiert", user=aktueller_user())
-            st.rerun()
+    werte = render_feld_gruppe(felder, lambda f: getattr(qm, f), key_prefix=f"f_{qm.qm_id}_{qm.status}")
+    if st.button("💾 Speichern", key=f"speichern_{qm.qm_id}_{qm.status}"):
+        for f, w in werte.items():
+            setattr(qm, f, w)
+        qm.add_history_entry(HistoryEntryType.BEARBEITET.value, "Angaben aktualisiert", user=aktueller_user())
+        st.rerun()
 
 
 def render_alle_angaben(qm):
     for status, felder in STATUS_FELDER.items():
         st.markdown(f"**{STATUS_ICON.get(status, '')} {status}**")
         for f in felder:
+            trigger = FELD_ABHAENGIGKEIT.get(f)
+            if trigger and not getattr(qm, trigger):
+                continue
             wert = getattr(qm, f)
             if isinstance(wert, bool):
                 wert = "Ja" if wert else "Nein"
@@ -452,14 +528,22 @@ def render_sidebar():
         st.title("📋 QM-App")
         st.caption(f"👤 {aktueller_user()} · {aktuelle_abteilung().value['name']}")
         st.divider()
-        if st.button("📋 Board", use_container_width=True):
-            st.session_state.view = "board"
-        if st.button("🪣 Mein Bucket", use_container_width=True):
-            st.session_state.view = "bucket"
-        if hat_recht(RECHTE.ERFASSEN) and st.button("➕ Neuer QM", use_container_width=True):
-            st.session_state.view = "neu"
-        if hat_recht(RECHTE.STATISTIK) and st.button("📈 Statistik", use_container_width=True):
-            st.session_state.view = "statistik"
+        if nur_erfasser():
+            if st.button("📄 Meine QMs", use_container_width=True):
+                st.session_state.view = "meine_qms"
+            if st.button("➕ Neuer QM", use_container_width=True):
+                st.session_state.view = "neu"
+        else:
+            if st.button("📋 Board", use_container_width=True):
+                st.session_state.view = "board"
+            if st.button("📄 Meine QMs", use_container_width=True):
+                st.session_state.view = "meine_qms"
+            if hat_bucket() and st.button("🪣 Mein Bucket", use_container_width=True):
+                st.session_state.view = "bucket"
+            if hat_recht(RECHTE.ERFASSEN) and st.button("➕ Neuer QM", use_container_width=True):
+                st.session_state.view = "neu"
+            if hat_recht(RECHTE.STATISTIK) and st.button("📈 Statistik", use_container_width=True):
+                st.session_state.view = "statistik"
         st.divider()
         if st.button("🚪 Abmelden", use_container_width=True):
             st.session_state.current_user = None
@@ -478,14 +562,22 @@ def main():
 
     render_sidebar()
     view = st.session_state.view
-    if view == "board":
-        view_board()
-    elif view == "bucket":
+
+    if nur_erfasser():
+        if view == "neu":
+            view_neuer_qm()
+        else:
+            view_meine_qms()
+    elif view == "meine_qms":
+        view_meine_qms()
+    elif view == "bucket" and hat_bucket():
         view_bucket()
-    elif view == "neu":
+    elif view == "neu" and hat_recht(RECHTE.ERFASSEN):
         view_neuer_qm()
-    elif view == "statistik":
+    elif view == "statistik" and hat_recht(RECHTE.STATISTIK):
         view_statistik()
+    else:
+        view_board()
 
     if st.session_state.detail_qm_id:
         zeige_details(st.session_state.detail_qm_id)
