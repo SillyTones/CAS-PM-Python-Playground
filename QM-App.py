@@ -8,7 +8,7 @@ Bucket mit offenen QMs zum Übernehmen, und ein Detail-Dialog pro QM.
 
 import streamlit as st
 import pandas as pd
-from datetime import date
+from datetime import date, datetime, timedelta
 from enum import Enum, auto
 
 from qm_model import (
@@ -18,16 +18,16 @@ from qm_model import (
 )
 from qm_data_reader import load_qm_data
 
-# Mitarbeiterlisten (fiktiv)
-_MITARBEITER_KUNDENDIENST = ['Schilling Curdin', 'Mettler Walo', 'Grieder Linus', 'Vogt Tarzisius', 'Wiesmann Pankraz', 'Rossier Beda', 'Marending Gion', 'Repond Hugo', 'Amrein Aldo', 'Wenger Werner', 'Oesch Hansjörg', 'Wicht Silvio', 'Waldmeier Tarzisius', 'Schürch Notker', 'Blatter Marco', 'Hodel Valentin', 'Schmutz Gion']
-_MITARBEITER_HOTLINE = ['Scherrer Duri', 'Imhof Domenic', 'Iseli Fritz', 'Vial Kaspar', 'Sudan Gion', 'Tinguely Elias', 'Wenger Nils', 'Rindlisbacher Odilo', 'Rickenbacher Nino', 'Brunschwiler Benno', 'Zbinden Yves', 'Frischknecht Livio']
-_MITARBEITER_VERKAUF = ['Gonseth Quirin', 'Berthoud Valerio', 'Piller Nils', 'Chevalley Cornel', 'Zeller Aldo', 'Wehrli Jann', 'Zollinger Werner', 'Küpfer Flavio', 'Wetzel Klemens', 'Tanner Ephrem', 'Schoch Jodok']
-_MITARBEITER_MONTAGE = ['Vial Kaspar', 'Brogli Gieri', 'Marmy Flurin', 'Knecht Thom', 'Hangartner Jann', 'Overney Ilir', 'Feuz Notker', 'Zingg Ephrem', 'Stalder Andri', 'Probst Christof', 'Descloux Ursin', 'Rennhard Livio', 'Rüegg Urban', 'Tinguely Hubert', 'Kaufmann Yves', 'Grunder Aldo', 'Oesch Curdin', 'Wüthrich Walo', 'Steffen Quirin', 'Progin Meinrad', 'Wanner Andri', 'Junod Thom', 'Yerly Mario', 'Wehrli Jann', 'Brülisauer Ilir', 'Frischknecht Livio', 'Habegger Urban', 'Zbinden Werner']
-_MITARBEITER_INBETRIEBNAHME = ['Fivaz Remo', 'Landolt Marco', 'Christinat Leandro', 'Overney Ilir', 'Kaufmann Yves', 'Aellen Domenic', 'Cathomen Jachen', 'Kellenberger Beda', 'Magnenat Gion', 'Baertschi Odilo', 'Herzig Iso']
-_MITARBEITER_KONSTRUKTION = ['Sturzenegger Meinrad', 'Jost Jachen', 'Hirschy Mario', 'Steinmann Hubert']
-_MITARBEITER_VORFUHRUNG = ['Zbinden Elio', 'Delessert Elio', 'Stalder Andri', 'Jaton Jodok', 'Bissig Benno', 'Descloux Ursin', 'Marmy Flurin', 'Junod Thom', 'Genoud Silas', 'Ruckstuhl Leandro', 'Salvisberg Hugo', 'Zimmerli Nino', 'Savary Elias', 'Zbinden Yves', 'Zeller Aldo', 'Zollinger Werner']
-_MITARBEITER_SOFTWARE_ENT = ['Aebischer Silvio', 'Iseli Fritz', 'Wicht Klemens', 'Rennhard Livio', 'Baertschi Odilo', 'Yerly Mario', 'Portmann Flurin']
-_MITARBEITER_ELEKTRO_ENT = ['Nydegger Orlando', 'Eichmann Duri', 'Vionnet Pankraz', 'Savary Elias']
+# Mitarbeiterlisten (fiktiv, bewusst kurz gehalten - nur Beispiele)
+_MITARBEITER_KUNDENDIENST = ['Schilling Curdin', 'Mettler Walo']
+_MITARBEITER_HOTLINE = ['Iseli Fritz', 'Scherrer Duri']
+_MITARBEITER_VERKAUF = ['Gonseth Quirin', 'Berthoud Valerio']
+_MITARBEITER_MONTAGE = ['Vial Kaspar', 'Knecht Thom']
+_MITARBEITER_INBETRIEBNAHME = ['Fivaz Remo', 'Landolt Marco']
+_MITARBEITER_KONSTRUKTION = ['Sturzenegger Meinrad', 'Hirschy Mario']
+_MITARBEITER_VORFUHRUNG = ['Zbinden Elio', 'Jaton Jodok']
+_MITARBEITER_SOFTWARE_ENT = ['Iseli Fritz', 'Aebischer Silvio', 'Wicht Klemens']
+_MITARBEITER_ELEKTRO_ENT = ['Nydegger Orlando', 'Vionnet Pankraz']
 _MITARBEITER_ENTWICKLUNGSLEITUNG = ['Chappuis Placi']
 _MITARBEITER_ENTWICKLUNG_APP_TEST = ['Wanner Andri', 'Ruckstuhl Leandro']
 _MITARBEITER_QS = ['Naef Ursin', 'Iseli Fritz', 'Schoch Jodok']
@@ -55,7 +55,7 @@ class ABTEILUNGEN(Enum):
     VORFUEHRUNG = {"name": "Vorführung", "Mitarbeiter": _MITARBEITER_VORFUHRUNG, "Rechte": {RECHTE.ERFASSEN}}
     SOFTWARE_ENTWICKLUNG = {"name": "Softwareentwicklung", "Mitarbeiter": _MITARBEITER_SOFTWARE_ENT, "Rechte": {RECHTE.ERFASSEN, RECHTE.BEARBEITEN}}
     ELEKTRO_ENTWICKLUNG = {"name": "Elektroentwicklung", "Mitarbeiter": _MITARBEITER_ELEKTRO_ENT, "Rechte": {RECHTE.ERFASSEN, RECHTE.BEARBEITEN}}
-    ENTWICKLUNGSLEITUNG = {"name": "Entwicklungsleitung", "Mitarbeiter": _MITARBEITER_ENTWICKLUNGSLEITUNG, "Rechte": {RECHTE.ERFASSEN, RECHTE.BEARBEITEN, RECHTE.ZUWEISEN}}
+    ENTWICKLUNGSLEITUNG = {"name": "Entwicklungsleitung", "Mitarbeiter": _MITARBEITER_ENTWICKLUNGSLEITUNG, "Rechte": {RECHTE.ERFASSEN, RECHTE.BEARBEITEN, RECHTE.ZUWEISEN, RECHTE.STATISTIK}}
     ENTWICKLUNG_APPLIKATION_TEST = {"name": "Entwicklung Anwendungstest", "Mitarbeiter": _MITARBEITER_ENTWICKLUNG_APP_TEST, "Rechte": {RECHTE.ERFASSEN, RECHTE.BEARBEITEN}}
     QS = {"name": "Qualitätssicherung", "Mitarbeiter": _MITARBEITER_QS, "Rechte": {RECHTE.ERFASSEN, RECHTE.BEARBEITEN, RECHTE.ZUWEISEN, RECHTE.STATISTIK}}
     GESCHAFTSLEITUNG = {"name": "Geschäftsleitung", "Mitarbeiter": _MITARBEITER_GESCHAFTSLEITUNG, "Rechte": {RECHTE.ERFASSEN, RECHTE.BEARBEITEN, RECHTE.ZUWEISEN, RECHTE.STATISTIK, RECHTE.SUPERUSER}}
@@ -87,21 +87,6 @@ STATUS_ICON = {
 }
 PRIORITAET_FARBE = {"Niedrig": "gray", "Mittel": "blue", "Hoch": "orange", "Kritisch": "red"}
 
-# Board-Phasen: die 9 Status werden zu 3 groben Phasen zusammengefasst, damit das Board
-# übersichtlich bleibt. Jede Karte zeigt trotzdem ihren echten Status (Caption).
-BOARD_PHASEN = ["📥 Neu", "🔧 In Arbeit", "✅ Erledigt"]
-PHASE_FUER_STATUS = {
-    QMStatus.NEU.value: "📥 Neu",
-    QMStatus.IN_PRUEFUNG.value: "📥 Neu",
-    QMStatus.WIEDEREROEFFNET.value: "📥 Neu",
-    QMStatus.ZUGEWIESEN.value: "🔧 In Arbeit",
-    QMStatus.IN_BEARBEITUNG.value: "🔧 In Arbeit",
-    QMStatus.PAUSIERT.value: "🔧 In Arbeit",
-    QMStatus.BEHOBEN.value: "✅ Erledigt",
-    QMStatus.ABGESCHLOSSEN.value: "✅ Erledigt",
-    QMStatus.ABGEBROCHEN.value: "✅ Erledigt",
-}
-
 # Felder je Prozessschritt - gleichzeitig die editierbaren Felder solange der QM in
 # diesem Status ist, UND die Gruppen für die "Alle Angaben"-Ansicht.
 STATUS_FELDER = {
@@ -117,7 +102,6 @@ STATUS_FELDER = {
     QMStatus.IN_BEARBEITUNG.value: ["bearbeitung_extern", "ticket_nr_extern", "korrespondenz_extern", "statuseintraege_vorhanden", "anleitung_link"],
     QMStatus.BEHOBEN.value: ["software_referenz_release", "hardware_aenderungsindex"],
 }
-NEU_FELDER = STATUS_FELDER[QMStatus.NEU.value]
 
 # Felder, die erst erscheinen, wenn ihr Auslöser-Feld True ist (z.B. PLC Version nur,
 # wenn PLC angekreuzt ist). Der Auslöser muss in der jeweiligen Feldliste vorher stehen.
@@ -135,6 +119,8 @@ FELD_ABHAENGIGKEIT = {
 
 # Werden nie als Eingabefeld angezeigt, sondern automatisch aus den Login-Infos gesetzt.
 AUTOMATISCHE_FELDER = {"erfasser_kuerzel", "erfasser_abteilung"}
+
+TERMINAL_STATUS = {QMStatus.BEHOBEN.value, QMStatus.ABGESCHLOSSEN.value, QMStatus.ABGEBROCHEN.value}
 
 ABTEILUNGSNAMEN = [a.value["name"] for a in ABTEILUNGEN]
 
@@ -186,9 +172,11 @@ def init_state():
         st.session_state.current_user = None
         st.session_state.current_abteilung_key = None
     if "view" not in st.session_state:
-        st.session_state.view = "board"
+        st.session_state.view = "liste"
     if "detail_qm_id" not in st.session_state:
         st.session_state.detail_qm_id = None
+    if "detail_bearbeiten" not in st.session_state:
+        st.session_state.detail_bearbeiten = False
 
 
 def aktueller_user():
@@ -217,10 +205,15 @@ def nur_erfasser(abteilung=None):
     return bool(abteilung) and abteilung.value["Rechte"] == {RECHTE.ERFASSEN}
 
 
-def hat_bucket():
-    # Bucket nur zeigen, wenn die Abteilung auch tatsächlich Ziel einer Kategorie ist -
-    # sonst ist er immer leer und damit nutzlos.
-    return hat_recht(RECHTE.BEARBEITEN) and aktuelle_abteilung() in KATEGORIE_ABTEILUNG.values()
+def hat_bucket(abteilung=None):
+    # Bucket/Abteilungs-Ansicht nur zeigen, wenn die Abteilung auch tatsächlich Ziel
+    # einer Kategorie ist - sonst ist sie immer leer und damit nutzlos.
+    abteilung = abteilung or aktuelle_abteilung()
+    if not abteilung:
+        return False
+    rechte = abteilung.value["Rechte"]
+    darf_bearbeiten = RECHTE.SUPERUSER in rechte or RECHTE.BEARBEITEN in rechte
+    return darf_bearbeiten and abteilung in KATEGORIE_ABTEILUNG.values()
 
 
 def finde_qm(qm_id):
@@ -236,7 +229,9 @@ def naechste_qm_id():
 
 
 def naechste_qm_nummer():
-    return f"QM-{date.today().year}-{naechste_qm_id():03d}"
+    # Format JJQM1XXXX: 2-stelliges Jahr + QM + laufende Nummer ab 10000.
+    jahr_kurz = date.today().year % 100
+    return f"{jahr_kurz:02d}QM{9999 + naechste_qm_id()}"
 
 
 def kuerzel(name):
@@ -276,21 +271,84 @@ def render_feld_gruppe(felder, werte_quelle, key_prefix):
     return werte
 
 
+def render_erfassung_layout(werte_quelle, editierbar, key_prefix="erfassung"):
+    """Feste, mehrspaltige Ansicht der Erfassungs-Felder (Grunddaten, Software-Details,
+    Kundenrückmeldung) - für das Erfassungsformular UND den 'Neu'-Tab der Detailansicht,
+    je nach `editierbar` als Eingabefelder oder als reiner Text."""
+
+    def feld(name):
+        roh = werte_quelle(name)
+        if editierbar:
+            return render_field(name, FORMULAR_CONFIG[name], roh, key=f"{key_prefix}_{name}")
+        anzeige = "Ja" if roh is True else "Nein" if roh is False else roh
+        st.write(f"**{FORMULAR_CONFIG[name]['label']}:** {anzeige if anzeige not in (None, '') else '–'}")
+        return roh
+
+    werte = {}
+    st.caption("Grunddaten")
+    c1, c2 = st.columns(2)
+    with c1:
+        werte["titel"] = feld("titel")
+        werte["hauptkategorie"] = feld("hauptkategorie")
+        werte["wunsch_oder_mangel"] = feld("wunsch_oder_mangel")
+        werte["sicherheitsrelevant"] = feld("sicherheitsrelevant")
+    with c2:
+        werte["beschreibung"] = feld("beschreibung")
+        werte["involvierte"] = feld("involvierte")
+
+    st.divider()
+    st.caption("Software-Details")
+    c3, c4 = st.columns(2)
+    with c3:
+        werte["ist_software"] = feld("ist_software")
+        if werte["ist_software"]:
+            werte["plc"] = feld("plc")
+            if werte["plc"]:
+                werte["plc_version"] = feld("plc_version")
+            werte["nc"] = feld("nc")
+            if werte["nc"]:
+                werte["nc_version"] = feld("nc_version")
+            werte["mcm"] = feld("mcm")
+    with c4:
+        werte["maschinentyp"] = feld("maschinentyp")
+        werte["serie_oder_einzelfall"] = feld("serie_oder_einzelfall")
+
+    st.divider()
+    st.caption("Kundenrückmeldung")
+    werte["kundenrueckmeldung_noetig"] = feld("kundenrueckmeldung_noetig")
+    if werte["kundenrueckmeldung_noetig"]:
+        c5, c6 = st.columns(2)
+        with c5:
+            werte["ticket_nr_intern"] = feld("ticket_nr_intern")
+        with c6:
+            werte["kontaktperson_servicetechniker"] = feld("kontaktperson_servicetechniker")
+
+    return werte
+
+
 def oeffne_details(qm_id):
     st.session_state.detail_qm_id = qm_id
+    st.session_state.detail_bearbeiten = False
 
 
 # ---------- Login ----------
 
 def view_login():
-    st.title("🔐 QM-App Anmeldung")
-    abteilung = st.selectbox("Abteilung", list(ABTEILUNGEN), format_func=lambda a: a.value["name"])
-    person = st.selectbox("Mitarbeiter", abteilung.value["Mitarbeiter"])
-    if st.button("Anmelden", type="primary"):
-        st.session_state.current_user = person
-        st.session_state.current_abteilung_key = abteilung.name
-        st.session_state.view = "meine_qms" if nur_erfasser(abteilung) else "board"
-        st.rerun()
+    _, mitte, _ = st.columns([1, 1, 1])
+    with mitte:
+        st.title("🔐 Anmeldung")
+        abteilung = st.selectbox("Abteilung", list(ABTEILUNGEN), format_func=lambda a: a.value["name"])
+        person = st.selectbox("Mitarbeiter", abteilung.value["Mitarbeiter"])
+        if st.button("Anmelden", type="primary", use_container_width=True):
+            st.session_state.current_user = person
+            st.session_state.current_abteilung_key = abteilung.name
+            if nur_erfasser(abteilung):
+                st.session_state.view = "meine_qms"
+            elif hat_bucket(abteilung):
+                st.session_state.view = "abteilung"
+            else:
+                st.session_state.view = "liste"
+            st.rerun()
 
 
 # ---------- Status ändern ----------
@@ -309,49 +367,49 @@ def setze_status(qm, ziel, user):
 
 
 def render_status_wechsel(qm):
-    optionen = VALID_TRANSITIONS.get(qm.status, [])
-    if not optionen or not hat_recht(RECHTE.BEARBEITEN):
+    if not hat_recht(RECHTE.BEARBEITEN):
         return
-    st.caption("Status ändern")
-    cols = st.columns(len(optionen))
-    for col, ziel in zip(cols, optionen):
-        label = f"{STATUS_ICON.get(ziel, '📌')} {ziel}"
-        if col.button(label, key=f"status_{qm.qm_id}_{ziel}", use_container_width=True):
-            setze_status(qm, ziel, aktueller_user())
-            st.rerun()
+    optionen = [qm.status] + VALID_TRANSITIONS.get(qm.status, [])
+    c1, c2 = st.columns([3, 1])
+    auswahl = c1.selectbox(
+        "Status", optionen, index=0, key=f"status_sel_{qm.qm_id}",
+        format_func=lambda s: f"{STATUS_ICON.get(s, '📌')} {s}", label_visibility="collapsed",
+    )
+    c2.write("")
+    if c2.button("Anwenden", key=f"status_apply_{qm.qm_id}", use_container_width=True, disabled=auswahl == qm.status):
+        setze_status(qm, auswahl, aktueller_user())
+        st.rerun()
 
 
-# ---------- Karten & Board ----------
+# ---------- Karten (wiederverwendet in Meine QMs, Abteilung, Statistik-Detail) ----------
 
-def render_karte(qm, key_prefix):
+def render_karte(qm, key_prefix, uebernehmen_erlaubt=False):
     with st.container(border=True):
         st.markdown(f"**{qm.qm_nummer}**  \n{qm.titel}")
         st.badge(qm.prioritaet, color=PRIORITAET_FARBE.get(qm.prioritaet, "gray"))
         st.caption(f"{STATUS_ICON.get(qm.status, '')} {qm.status} · {qm.hauptkategorie}")
-        if st.button("Öffnen", key=f"{key_prefix}_{qm.qm_id}", use_container_width=True):
+        if uebernehmen_erlaubt and hat_recht(RECHTE.BEARBEITEN):
+            c1, c2 = st.columns(2)
+            if c1.button("Öffnen", key=f"{key_prefix}_open_{qm.qm_id}", use_container_width=True):
+                oeffne_details(qm.qm_id)
+            if c2.button("🙋 Übernehmen", key=f"{key_prefix}_take_{qm.qm_id}", use_container_width=True):
+                uebernehmen(qm)
+                st.rerun()
+        elif st.button("Öffnen", key=f"{key_prefix}_{qm.qm_id}", use_container_width=True):
             oeffne_details(qm.qm_id)
 
 
-def view_board():
-    st.header("📋 Board")
-    suche = st.text_input("🔎 Suche", placeholder="Titel oder Nummer...", label_visibility="collapsed")
-    qm_liste = st.session_state.qm_liste
-    if suche:
-        s = suche.lower()
-        qm_liste = [qm for qm in qm_liste if s in qm.titel.lower() or s in qm.qm_nummer.lower()]
-
-    spalten = st.columns(len(BOARD_PHASEN))
-    for spalte, phase in zip(spalten, BOARD_PHASEN):
-        with spalte:
-            st.markdown(f"**{phase}**")
-            treffer = [qm for qm in qm_liste if PHASE_FUER_STATUS.get(qm.status) == phase]
-            if not treffer:
-                st.caption("–")
-            for qm in treffer:
-                render_karte(qm, key_prefix="board_open")
+def render_karten_raster(qm_liste, key_prefix, pro_reihe=3, uebernehmen_erlaubt=False):
+    if not qm_liste:
+        st.caption("Keine.")
+        return
+    for i in range(0, len(qm_liste), pro_reihe):
+        for col, qm in zip(st.columns(pro_reihe), qm_liste[i:i + pro_reihe]):
+            with col:
+                render_karte(qm, key_prefix=key_prefix, uebernehmen_erlaubt=uebernehmen_erlaubt)
 
 
-# ---------- Meine QMs (für Abteilungen mit ausschliesslich ERFASSEN) ----------
+# ---------- Meine QMs (für alle: eigene + zugewiesene) ----------
 
 def view_meine_qms():
     st.header("📄 Meine QMs")
@@ -364,15 +422,43 @@ def view_meine_qms():
     if not meine:
         st.info("Du bist aktuell an keinem QM beteiligt.")
         return
-    for qm in meine:
-        with st.container(border=True):
-            st.markdown(f"**{qm.qm_nummer}** – {qm.titel}")
-            st.caption(f"{STATUS_ICON.get(qm.status, '')} {qm.status} · {qm.hauptkategorie}")
-            if st.button("Öffnen", key=f"meine_{qm.qm_id}", use_container_width=True):
-                oeffne_details(qm.qm_id)
+    render_karten_raster(meine, key_prefix="meine")
 
 
-# ---------- Mein Bucket ----------
+# ---------- Alle QMs (filterbare Liste, allgemeine Übersicht) ----------
+
+def view_liste():
+    st.header("📋 Alle QMs")
+    c1, c2, c3 = st.columns(3)
+    status_filter = c1.multiselect("Status", [s.value for s in QMStatus])
+    kategorie_filter = c2.multiselect("Kategorie", HAUPTKATEGORIEN)
+    suche = c3.text_input("Suche", placeholder="Titel oder Nummer...")
+
+    qm_liste = st.session_state.qm_liste
+    if status_filter:
+        qm_liste = [qm for qm in qm_liste if qm.status in status_filter]
+    if kategorie_filter:
+        qm_liste = [qm for qm in qm_liste if qm.hauptkategorie in kategorie_filter]
+    if suche:
+        s = suche.lower()
+        qm_liste = [qm for qm in qm_liste if s in qm.titel.lower() or s in qm.qm_nummer.lower()]
+
+    st.caption(f"{len(qm_liste)} von {len(st.session_state.qm_liste)} QMs")
+    kopf = st.columns([1.3, 3, 1.4, 1.3, 1, 1])
+    for col, label in zip(kopf, ["Nummer", "Titel", "Status", "Kategorie", "Priorität", ""]):
+        col.markdown(f"**{label}**")
+    for qm in qm_liste:
+        c1, c2, c3, c4, c5, c6 = st.columns([1.3, 3, 1.4, 1.3, 1, 1])
+        c1.write(qm.qm_nummer)
+        c2.write(qm.titel)
+        c3.write(f"{STATUS_ICON.get(qm.status, '')} {qm.status}")
+        c4.write(qm.hauptkategorie)
+        c5.write(qm.prioritaet)
+        if c6.button("Öffnen", key=f"liste_{qm.qm_id}", use_container_width=True):
+            oeffne_details(qm.qm_id)
+
+
+# ---------- Mein Bucket / Meine Abteilung ----------
 
 def uebernehmen(qm):
     user = aktueller_user()
@@ -382,29 +468,46 @@ def uebernehmen(qm):
     qm.change_status(QMStatus.ZUGEWIESEN.value, user=user)
 
 
+def letzte_aktivitaet(qm):
+    return qm.history[-1].timestamp if qm.history else qm.erstellt_am
+
+
+def render_erledigt_bereich(erledigte, key_prefix):
+    tage = st.slider("Zeitraum (Tage)", 1, 90, 14, key=f"{key_prefix}_tage")
+    grenze = datetime.now() - timedelta(days=tage)
+    aktuelle = [qm for qm in erledigte if letzte_aktivitaet(qm) >= grenze]
+    aeltere = [qm for qm in erledigte if letzte_aktivitaet(qm) < grenze]
+    render_karten_raster(aktuelle, key_prefix=f"{key_prefix}_aktuell")
+    if aeltere:
+        with st.expander(f"Ältere anzeigen ({len(aeltere)})"):
+            render_karten_raster(aeltere, key_prefix=f"{key_prefix}_alt")
+
+
 def view_bucket():
     abteilung = aktuelle_abteilung()
-    st.header(f"🪣 Mein Bucket – {abteilung.value['name']}")
-    st.caption("Noch nicht zugewiesene QMs, deren Kategorie zu dieser Abteilung passt.")
-    offene_status = (QMStatus.NEU.value, QMStatus.IN_PRUEFUNG.value)
-    qm_liste = [
-        qm for qm in st.session_state.qm_liste
-        if KATEGORIE_ABTEILUNG.get(qm.hauptkategorie) == abteilung
-        and qm.status in offene_status and not qm.zugewiesen_an
-    ]
-    if not qm_liste:
-        st.info("Aktuell nichts Offenes in deinem Bucket.")
-        return
-    for qm in qm_liste:
-        with st.container(border=True):
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                st.markdown(f"**{qm.qm_nummer}** – {qm.titel}")
-                st.caption(f"{qm.hauptkategorie} · {qm.prioritaet} · {qm.status}")
-            with col2:
-                if hat_recht(RECHTE.BEARBEITEN) and st.button("🙋 Übernehmen", key=f"take_{qm.qm_id}", use_container_width=True):
-                    uebernehmen(qm)
-                    st.rerun()
+    st.header(f"🪣 {abteilung.value['name']}")
+    st.caption("Was in deiner Abteilung läuft - Details ansehen, bearbeiten, übernehmen oder zuweisen.")
+
+    relevante = [qm for qm in st.session_state.qm_liste if KATEGORIE_ABTEILUNG.get(qm.hauptkategorie) == abteilung]
+    nicht_zugewiesen = [qm for qm in relevante if qm.status in (QMStatus.NEU.value, QMStatus.IN_PRUEFUNG.value) and not qm.zugewiesen_an]
+    zugewiesen = [qm for qm in relevante if qm.status == QMStatus.ZUGEWIESEN.value]
+    in_bearbeitung = [qm for qm in relevante if qm.status in (QMStatus.IN_BEARBEITUNG.value, QMStatus.PAUSIERT.value)]
+    erledigt = [qm for qm in relevante if qm.status in (QMStatus.BEHOBEN.value, QMStatus.ABGESCHLOSSEN.value, QMStatus.ABGEBROCHEN.value)]
+
+    st.subheader(f"🆕 Noch nicht zugewiesen ({len(nicht_zugewiesen)})")
+    render_karten_raster(nicht_zugewiesen, key_prefix="abt_frei", pro_reihe=2, uebernehmen_erlaubt=True)
+
+    st.divider()
+    st.subheader(f"👤 Zugewiesen ({len(zugewiesen)})")
+    render_karten_raster(zugewiesen, key_prefix="abt_zugewiesen")
+
+    st.divider()
+    st.subheader(f"🔧 In Bearbeitung ({len(in_bearbeitung)})")
+    render_karten_raster(in_bearbeitung, key_prefix="abt_bearbeitung")
+
+    st.divider()
+    st.subheader(f"✅ Abgeschlossen ({len(erledigt)})")
+    render_erledigt_bereich(erledigt, key_prefix="abt_erledigt")
 
 
 # ---------- Neuer QM ----------
@@ -413,7 +516,7 @@ def view_neuer_qm():
     st.header("➕ Neuen Qualitätsmangel erfassen")
     st.caption(f"Erfasst durch {aktueller_user()} ({aktuelle_abteilung().value['name']})")
 
-    werte = render_feld_gruppe(NEU_FELDER, lambda f: None, key_prefix="neu")
+    werte = render_erfassung_layout(lambda f: None, editierbar=True, key_prefix="neu")
 
     if not st.button("✅ Erfassen", type="primary"):
         return
@@ -438,29 +541,46 @@ def view_neuer_qm():
 
 # ---------- Detail-Dialog ----------
 
-def render_editierbare_felder(qm):
-    felder = STATUS_FELDER.get(qm.status, [])
-    if not felder or not hat_recht(RECHTE.BEARBEITEN):
-        return
-    werte = render_feld_gruppe(felder, lambda f: getattr(qm, f), key_prefix=f"f_{qm.qm_id}_{qm.status}")
-    if st.button("💾 Speichern", key=f"speichern_{qm.qm_id}_{qm.status}"):
-        for f, w in werte.items():
-            setattr(qm, f, w)
-        qm.add_history_entry(HistoryEntryType.BEARBEITET.value, "Angaben aktualisiert", user=aktueller_user())
-        st.rerun()
+def render_kurzfakten(qm):
+    # Kompakte, immer sichtbare Zusammenfassung - man sieht sofort worum es geht,
+    # bevor man in die Details/Tabs wechselt.
+    fakten = [qm.hauptkategorie, f"Priorität: {qm.prioritaet}"]
+    if qm.zugewiesen_an:
+        fakten.append(f"Zugewiesen an {qm.zugewiesen_an}")
+    if qm.faellig_am:
+        fakten.append(f"Fällig am {qm.faellig_am:%d.%m.%Y}")
+    fakten.append(f"Erfasst von {qm.erfasser_kuerzel or qm.ersteller}")
+    st.caption(" · ".join(fakten))
 
 
-def render_alle_angaben(qm):
-    for status, felder in STATUS_FELDER.items():
-        st.markdown(f"**{STATUS_ICON.get(status, '')} {status}**")
+def render_gruppe_tab(qm, gruppen_key, felder, editierbar):
+    # Automatische Felder (Erfasser Kürzel/Abteilung) immer nur lesend zeigen.
+    for f in [f for f in felder if f in AUTOMATISCHE_FELDER]:
+        st.write(f"**{FORMULAR_CONFIG[f]['label']}:** {getattr(qm, f) or '–'}")
+
+    if gruppen_key == QMStatus.NEU.value:
+        werte = render_erfassung_layout(lambda f: getattr(qm, f), editierbar, key_prefix=f"tab_{qm.qm_id}")
+    elif editierbar:
+        werte = render_feld_gruppe(felder, lambda f: getattr(qm, f), key_prefix=f"tab_{qm.qm_id}_{gruppen_key}")
+    else:
+        werte = {}
         for f in felder:
+            if f in AUTOMATISCHE_FELDER:
+                continue
             trigger = FELD_ABHAENGIGKEIT.get(f)
             if trigger and not getattr(qm, trigger):
                 continue
             wert = getattr(qm, f)
             if isinstance(wert, bool):
                 wert = "Ja" if wert else "Nein"
-            st.write(f"{FORMULAR_CONFIG[f]['label']}: {wert if wert not in (None, '') else '–'}")
+            st.write(f"**{FORMULAR_CONFIG[f]['label']}:** {wert if wert not in (None, '') else '–'}")
+
+    if editierbar and st.button("💾 Speichern", key=f"tab_speichern_{qm.qm_id}_{gruppen_key}"):
+        for f, w in werte.items():
+            setattr(qm, f, w)
+        qm.add_history_entry(HistoryEntryType.BEARBEITET.value, "Angaben aktualisiert", user=aktueller_user())
+        st.session_state.detail_bearbeiten = False
+        st.rerun()
 
 
 def render_verlauf(qm):
@@ -471,9 +591,10 @@ def render_verlauf(qm):
 
 
 def render_kommentare(qm):
-    st.markdown("**💬 Kommentare**")
     for k in qm.kommentare:
         st.markdown(f"_{k.timestamp:%d.%m.%Y %H:%M}_ **{k.user}:** {k.text}")
+    if not qm.kommentare:
+        st.caption("Noch keine Kommentare.")
     if hat_recht(RECHTE.BEARBEITEN) or hat_recht(RECHTE.ERFASSEN):
         text = st.text_input("Neuer Kommentar", key=f"kommentar_{qm.qm_id}", label_visibility="collapsed", placeholder="Kommentar hinzufügen...")
         if st.button("Hinzufügen", key=f"kommentar_go_{qm.qm_id}") and text:
@@ -481,44 +602,246 @@ def render_kommentare(qm):
             st.rerun()
 
 
-@st.dialog(" ", width="large")
+def schliesse_dialog():
+    st.session_state.detail_qm_id = None
+    st.session_state.detail_bearbeiten = False
+
+
+@st.dialog(" ", width="large", on_dismiss=schliesse_dialog)
 def zeige_details(qm_id):
     qm = finde_qm(qm_id)
     if qm is None:
         st.error("QM nicht gefunden.")
         return
 
-    if st.button("✖ Schliessen"):
-        st.session_state.detail_qm_id = None
-        st.rerun()
+    kopf, taste = st.columns([5, 1])
+    kopf.subheader(f"{qm.qm_nummer} – {qm.titel}")
+    if hat_recht(RECHTE.BEARBEITEN):
+        label = "👁️ Ansehen" if st.session_state.detail_bearbeiten else "✏️ Bearbeiten"
+        if taste.button(label, key=f"toggle_edit_{qm.qm_id}", use_container_width=True):
+            st.session_state.detail_bearbeiten = not st.session_state.detail_bearbeiten
+            st.rerun()
 
-    st.subheader(f"{qm.qm_nummer} – {qm.titel}")
     st.caption(qm.beschreibung)
-    st.markdown(f"**Status:** {STATUS_ICON.get(qm.status, '')} {qm.status}")
+    render_kurzfakten(qm)
+
+    st.markdown(f"**{STATUS_ICON.get(qm.status, '')} {qm.status}**")
     render_status_wechsel(qm)
+    if not qm.zugewiesen_an and qm.status not in TERMINAL_STATUS and hat_recht(RECHTE.BEARBEITEN):
+        if st.button("🙋 Übernehmen", key=f"dialog_take_{qm.qm_id}"):
+            uebernehmen(qm)
+            st.rerun()
+
     st.divider()
-
-    render_editierbare_felder(qm)
-
-    with st.expander("📄 Alle Angaben"):
-        render_alle_angaben(qm)
-    with st.expander("📜 Verlauf"):
+    editierbar = hat_recht(RECHTE.BEARBEITEN) and st.session_state.detail_bearbeiten
+    tab_namen = [f"{STATUS_ICON.get(status, '')} {status}" for status in STATUS_FELDER] + ["💬 Kommentare", "📜 Verlauf"]
+    tabs = st.tabs(tab_namen)
+    for tab, (status, felder) in zip(tabs, STATUS_FELDER.items()):
+        with tab:
+            render_gruppe_tab(qm, status, felder, editierbar)
+    with tabs[-2]:
+        render_kommentare(qm)
+    with tabs[-1]:
         render_verlauf(qm)
-
-    st.divider()
-    render_kommentare(qm)
 
 
 # ---------- Statistik ----------
 
+ALT_SCHWELLE_TAGE = 14
+SLA_TAGE_KUNDE = 5
+
+
+def status_zeitpunkt(qm, status_wert):
+    for h in qm.history:
+        if h.neuer_wert == status_wert:
+            return h.timestamp
+    return None
+
+
+def terminal_zeitpunkt(qm):
+    return status_zeitpunkt(qm, QMStatus.BEHOBEN.value) or status_zeitpunkt(qm, QMStatus.ABGESCHLOSSEN.value)
+
+
+def pie_chart(werte, spaltenname):
+    df = werte.rename_axis(spaltenname).reset_index(name="Anzahl")
+    spec = {
+        "mark": {"type": "arc", "innerRadius": 55, "tooltip": True},
+        "encoding": {
+            "theta": {"field": "Anzahl", "type": "quantitative"},
+            "color": {"field": spaltenname, "type": "nominal"},
+        },
+        "height": 260,
+    }
+    st.vega_lite_chart(df, spec, use_container_width=True)
+
+
+def wochen_zaehlung(zeitpunkte):
+    if not zeitpunkte:
+        return pd.Series(dtype=int)
+    serie = pd.Series(pd.to_datetime(zeitpunkte))
+    return serie.dt.to_period("W").apply(lambda p: p.start_time).value_counts().sort_index()
+
+
 def view_statistik():
     st.header("📈 Statistik")
-    df = pd.DataFrame([{"Status": qm.status, "Kategorie": qm.hauptkategorie} for qm in st.session_state.qm_liste])
-    col1, col2 = st.columns(2)
-    col1.subheader("Nach Status")
-    col1.bar_chart(df["Status"].value_counts())
-    col2.subheader("Nach Kategorie")
-    col2.bar_chart(df["Kategorie"].value_counts())
+    qm_liste = st.session_state.qm_liste
+    heute = datetime.now()
+
+    offene = [qm for qm in qm_liste if qm.status not in TERMINAL_STATUS]
+    alte_unbearbeitete = [
+        qm for qm in offene
+        if qm.status in (QMStatus.NEU.value, QMStatus.IN_PRUEFUNG.value)
+        and (heute - qm.erstellt_am).days >= ALT_SCHWELLE_TAGE
+    ]
+    sicherheitsrelevant_offen = [qm for qm in offene if qm.sicherheitsrelevant]
+    kuerzlich_erledigt = [qm for qm in qm_liste if qm.status in TERMINAL_STATUS and (heute - letzte_aktivitaet(qm)).days <= ALT_SCHWELLE_TAGE]
+
+    reaktionszeiten_h, bearbeitungszeiten_h, rueckmeldungszeiten_h = [], [], []
+    sla_relevant = sla_getroffen = 0
+    for qm in qm_liste:
+        zugewiesen_zeit = status_zeitpunkt(qm, QMStatus.ZUGEWIESEN.value)
+        if zugewiesen_zeit:
+            reaktionszeiten_h.append((zugewiesen_zeit - qm.erstellt_am).total_seconds() / 3600)
+        ziel_zeit = terminal_zeitpunkt(qm)
+        if zugewiesen_zeit and ziel_zeit and ziel_zeit > zugewiesen_zeit:
+            bearbeitungszeiten_h.append((ziel_zeit - zugewiesen_zeit).total_seconds() / 3600)
+        if qm.kommentare:
+            erster_kommentar = min(k.timestamp for k in qm.kommentare)
+            rueckmeldungszeiten_h.append((erster_kommentar - qm.erstellt_am).total_seconds() / 3600)
+        if qm.kundenrueckmeldung_noetig:
+            sla_relevant += 1
+            if ziel_zeit and (ziel_zeit - qm.erstellt_am).days <= SLA_TAGE_KUNDE:
+                sla_getroffen += 1
+
+    mittel = lambda werte: sum(werte) / len(werte) if werte else None
+
+    st.subheader("Auf einen Blick")
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric("Offene QMs", len(offene))
+    k2.metric(f"Alte unbearb. Fälle (>{ALT_SCHWELLE_TAGE}d)", len(alte_unbearbeitete))
+    k3.metric("Sicherheitsrelevant offen", len(sicherheitsrelevant_offen))
+    k4.metric(f"Abgeschlossen (letzte {ALT_SCHWELLE_TAGE}d)", len(kuerzlich_erledigt))
+
+    k5, k6, k7, k8 = st.columns(4)
+    reaktion = mittel(reaktionszeiten_h)
+    k5.metric("Ø Reaktionszeit bis Zugewiesen", f"{reaktion:.1f} h" if reaktion is not None else "–")
+    rueckmeldung = mittel(rueckmeldungszeiten_h)
+    k6.metric("Ø Zeit bis 1. Rückmeldung", f"{rueckmeldung:.1f} h" if rueckmeldung is not None else "–")
+    bearbeitung = mittel(bearbeitungszeiten_h)
+    k7.metric("Ø Bearbeitungszeit", f"{bearbeitung / 24:.1f} Tage" if bearbeitung is not None else "–")
+    k8.metric("Kundenzufriedenheit (Proxy)", f"{sla_getroffen}/{sla_relevant} SLA" if sla_relevant else "–")
+    st.caption(
+        f"Kundenzufriedenheit ist ein Näherungswert: Anteil der QMs mit Kundenrückmeldung nötig, "
+        f"die innert {SLA_TAGE_KUNDE} Tagen abgeschlossen wurden - es gibt keine echte Zufriedenheitsmessung."
+    )
+
+    st.divider()
+    st.subheader("Zeitverlauf")
+    verlauf = pd.DataFrame({
+        "Neu erfasst": wochen_zaehlung([qm.erstellt_am for qm in qm_liste]),
+        "Abgeschlossen": wochen_zaehlung([terminal_zeitpunkt(qm) for qm in qm_liste if terminal_zeitpunkt(qm)]),
+    }).fillna(0)
+    st.area_chart(verlauf)
+
+    st.divider()
+    st.subheader("Verteilungen")
+    p1, p2, p3 = st.columns(3)
+    with p1:
+        st.caption("Nach Status")
+        pie_chart(pd.Series([qm.status for qm in qm_liste]).value_counts(), "Status")
+    with p2:
+        st.caption("Nach Kategorie")
+        pie_chart(pd.Series([qm.hauptkategorie for qm in qm_liste]).value_counts(), "Kategorie")
+    with p3:
+        st.caption("Nach Priorität")
+        pie_chart(pd.Series([qm.prioritaet for qm in qm_liste]).value_counts(), "Priorität")
+
+    st.divider()
+    st.subheader("Offene QMs pro Abteilung")
+    workload = {}
+    for qm in offene:
+        ziel_abt = KATEGORIE_ABTEILUNG.get(qm.hauptkategorie)
+        name = ziel_abt.value["name"] if ziel_abt else "Andere"
+        workload[name] = workload.get(name, 0) + 1
+    st.bar_chart(pd.Series(workload, name="Offene QMs"))
+
+
+# ---------- Planung ----------
+
+def gantt_chart(zeilen, hoehe=260):
+    df = pd.DataFrame(zeilen)
+    spec = {
+        "mark": {"type": "bar", "tooltip": True, "cornerRadius": 3},
+        "encoding": {
+            "y": {"field": "Ticket", "type": "nominal", "sort": "-x", "title": None},
+            "x": {"field": "Start", "type": "temporal", "title": None},
+            "x2": {"field": "Ende", "type": "temporal"},
+            "color": {"field": "Abteilung", "type": "nominal"},
+            "tooltip": [
+                {"field": "Ticket", "type": "nominal"},
+                {"field": "Titel", "type": "nominal"},
+                {"field": "Start", "type": "temporal"},
+                {"field": "Ende", "type": "temporal"},
+            ],
+        },
+        "height": hoehe,
+    }
+    st.vega_lite_chart(df, spec, use_container_width=True)
+
+
+def view_planung():
+    st.header("📅 Planung")
+    st.caption("Auslastung der Teams und geplante Termine - hilft bei der Ressourcenplanung.")
+    qm_liste = st.session_state.qm_liste
+    heute = datetime.now().date()
+    offene = [qm for qm in qm_liste if qm.status not in TERMINAL_STATUS]
+    HOEHE = 230
+
+    links, rechts = st.columns(2)
+    with links:
+        st.subheader("Team-Auslastung")
+        workload = {}
+        for qm in offene:
+            if qm.zugewiesen_an:
+                workload[qm.zugewiesen_an] = workload.get(qm.zugewiesen_an, 0) + 1
+        if workload:
+            st.bar_chart(pd.Series(workload, name="Offene QMs").sort_values(ascending=False), height=HOEHE)
+        else:
+            st.caption("Aktuell niemandem etwas zugewiesen.")
+
+    with rechts:
+        st.subheader("Termine & Fälligkeiten")
+        mit_termin = [qm for qm in offene if qm.faellig_am or qm.termin_geplante_umsetzung]
+        mit_termin.sort(key=lambda qm: qm.faellig_am or qm.termin_geplante_umsetzung)
+        with st.container(height=HOEHE):
+            if not mit_termin:
+                st.caption("Keine offenen QMs mit Termin oder Fälligkeitsdatum.")
+            for qm in mit_termin:
+                datum = qm.faellig_am or qm.termin_geplante_umsetzung
+                ueberfaellig = datum < heute
+                icon = "🔴" if ueberfaellig else "🟢"
+                label = f"{icon} {qm.qm_nummer} · {datum:%d.%m.%Y} · {qm.titel}"
+                if st.button(label, key=f"planung_{qm.qm_id}", use_container_width=True):
+                    oeffne_details(qm.qm_id)
+
+    st.subheader("Zeitplan")
+    zeilen = []
+    for qm in offene:
+        ende = qm.faellig_am or qm.termin_geplante_umsetzung
+        if not ende:
+            continue
+        ziel_abt = KATEGORIE_ABTEILUNG.get(qm.hauptkategorie)
+        zeilen.append({
+            "Ticket": qm.qm_nummer,
+            "Titel": qm.titel,
+            "Start": qm.erstellt_am.date().isoformat(),
+            "Ende": ende.isoformat(),
+            "Abteilung": ziel_abt.value["name"] if ziel_abt else "Andere",
+        })
+    if zeilen:
+        gantt_chart(zeilen, hoehe=HOEHE)
+    else:
+        st.caption("Keine Termine für einen Zeitplan vorhanden.")
 
 
 # ---------- Navigation ----------
@@ -534,21 +857,23 @@ def render_sidebar():
             if st.button("➕ Neuer QM", use_container_width=True):
                 st.session_state.view = "neu"
         else:
-            if st.button("📋 Board", use_container_width=True):
-                st.session_state.view = "board"
+            if hat_bucket() and st.button("🪣 Mein Bucket", use_container_width=True):
+                st.session_state.view = "abteilung"
             if st.button("📄 Meine QMs", use_container_width=True):
                 st.session_state.view = "meine_qms"
-            if hat_bucket() and st.button("🪣 Mein Bucket", use_container_width=True):
-                st.session_state.view = "bucket"
+            if st.button("📋 Alle QMs", use_container_width=True):
+                st.session_state.view = "liste"
             if hat_recht(RECHTE.ERFASSEN) and st.button("➕ Neuer QM", use_container_width=True):
                 st.session_state.view = "neu"
             if hat_recht(RECHTE.STATISTIK) and st.button("📈 Statistik", use_container_width=True):
                 st.session_state.view = "statistik"
+            if hat_recht(RECHTE.STATISTIK) and st.button("📅 Planung", use_container_width=True):
+                st.session_state.view = "planung"
         st.divider()
         if st.button("🚪 Abmelden", use_container_width=True):
             st.session_state.current_user = None
             st.session_state.current_abteilung_key = None
-            st.session_state.view = "board"
+            st.session_state.view = "meine_qms"
             st.rerun()
 
 
@@ -570,14 +895,16 @@ def main():
             view_meine_qms()
     elif view == "meine_qms":
         view_meine_qms()
-    elif view == "bucket" and hat_bucket():
+    elif view == "abteilung" and hat_bucket():
         view_bucket()
     elif view == "neu" and hat_recht(RECHTE.ERFASSEN):
         view_neuer_qm()
     elif view == "statistik" and hat_recht(RECHTE.STATISTIK):
         view_statistik()
+    elif view == "planung" and hat_recht(RECHTE.STATISTIK):
+        view_planung()
     else:
-        view_board()
+        view_liste()
 
     if st.session_state.detail_qm_id:
         zeige_details(st.session_state.detail_qm_id)

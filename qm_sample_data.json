@@ -1,10 +1,10 @@
 [
   {
     "qm_id": 1,
-    "qm_nummer": "QM-2026-001",
-    "erfasser_kuerzel": "HR",
-    "erfasser_abteilung": "SOFTWARE_ENTWICKLUNG",
-    "involvierte": "Habegger Ursin",
+    "qm_nummer": "26QM10000",
+    "erfasser_kuerzel": "SC",
+    "erfasser_abteilung": "Kundendienst",
+    "involvierte": null,
     "titel": "Dashboard zeigt falsche Temperaturwerte an",
     "beschreibung": "Im Hauptdashboard werden die Temperaturwerte um ca. 5°C zu hoch angezeigt. Das Problem tritt seit dem letzten Software-Update v2.3.1 auf und betrifft alle Anlagen am Standort Zürich.",
     "wunsch_oder_mangel": "Mangel",
@@ -24,7 +24,7 @@
     "minor_major": "Major",
     "prioritaet": "Hoch",
     "termin_geplante_umsetzung": "2026-05-20",
-    "abteilung": "SOFTWARE_ENTWICKLUNG",
+    "abteilung": "Softwareentwicklung",
     "zugewiesen_an": "Iseli Fritz",
     "faellig_am": "2026-05-20",
     "bearbeitung_extern": false,
@@ -35,14 +35,14 @@
     "software_referenz_release": null,
     "hardware_aenderungsindex": null,
     "erstellt_am": "2026-05-01T08:30:00",
-    "ersteller": "Rossier Gion",
+    "ersteller": "Schilling Curdin",
     "status": "In Bearbeitung",
     "history": [
       {
         "timestamp": "2026-05-01T08:30:00",
         "typ": "erstellt",
-        "user": "Rossier Gion",
-        "details": "QM QM-2026-001 wurde erstellt",
+        "user": "Schilling Curdin",
+        "details": "QM 26QM10000 wurde erstellt",
         "status": "Neu",
         "alter_wert": null,
         "neuer_wert": null
@@ -50,7 +50,7 @@
       {
         "timestamp": "2026-05-02T09:15:00",
         "typ": "status_geaendert",
-        "user": "Habegger Ursin",
+        "user": "Chappuis Placi",
         "details": "Status geändert von 'Neu' zu 'In Prüfung'",
         "status": "In Prüfung",
         "alter_wert": "Neu",
@@ -59,7 +59,7 @@
       {
         "timestamp": "2026-05-02T09:30:00",
         "typ": "status_geaendert",
-        "user": "Habegger Ursin",
+        "user": "Chappuis Placi",
         "details": "Status geändert von 'In Prüfung' zu 'Zugewiesen'",
         "status": "Zugewiesen",
         "alter_wert": "In Prüfung",
@@ -68,8 +68,8 @@
       {
         "timestamp": "2026-05-03T10:00:00",
         "typ": "zugewiesen",
-        "user": "Habegger Ursin",
-        "details": "Zugewiesen an Iseli Fritz (SOFTWARE_ENTWICKLUNG)",
+        "user": "Chappuis Placi",
+        "details": "Zugewiesen an Iseli Fritz (Softwareentwicklung)",
         "status": "Zugewiesen",
         "alter_wert": null,
         "neuer_wert": "Iseli Fritz"
@@ -87,7 +87,7 @@
         "timestamp": "2026-05-06T11:30:00",
         "typ": "kommentar",
         "user": "Iseli Fritz",
-        "details": "Kommentar hinzugefügt: Fehler in der Sensorauslesung identifiziert. Kalibrierungsfaktor war falsch konfiguriert...",
+        "details": "Kommentar hinzugefügt: Fehler in der Sensorauslesung identifiziert...",
         "status": "In Bearbeitung",
         "alter_wert": null,
         "neuer_wert": null
@@ -103,10 +103,10 @@
   },
   {
     "qm_id": 2,
-    "qm_nummer": "QM-2026-002",
-    "erfasser_kuerzel": "BM",
-    "erfasser_abteilung": "KONSTRUKTION",
-    "involvierte": "Habegger Ursin",
+    "qm_nummer": "26QM10001",
+    "erfasser_kuerzel": "FR",
+    "erfasser_abteilung": "Inbetriebnahme",
+    "involvierte": null,
     "titel": "Anleitung für Wartungsintervalle fehlt",
     "beschreibung": "In der aktuellen Bedienungsanleitung fehlt ein Kapitel zu den empfohlenen Wartungsintervallen für die Hydraulikeinheit. Kunden fragen wiederholt nach diesen Informationen.",
     "wunsch_oder_mangel": "Wunsch",
@@ -126,8 +126,8 @@
     "minor_major": "Minor",
     "prioritaet": "Mittel",
     "termin_geplante_umsetzung": "2026-06-01",
-    "abteilung": "KONSTRUKTION",
-    "zugewiesen_an": "Vial Hubert",
+    "abteilung": "Qualitätssicherung",
+    "zugewiesen_an": "Naef Ursin",
     "faellig_am": "2026-06-01",
     "bearbeitung_extern": false,
     "ticket_nr_extern": null,
@@ -137,14 +137,14 @@
     "software_referenz_release": null,
     "hardware_aenderungsindex": null,
     "erstellt_am": "2026-05-03T14:00:00",
-    "ersteller": "Fivaz Quirin",
+    "ersteller": "Fivaz Remo",
     "status": "Zugewiesen",
     "history": [
       {
         "timestamp": "2026-05-03T14:00:00",
         "typ": "erstellt",
-        "user": "Fivaz Quirin",
-        "details": "QM QM-2026-002 wurde erstellt",
+        "user": "Fivaz Remo",
+        "details": "QM 26QM10001 wurde erstellt",
         "status": "Neu",
         "alter_wert": null,
         "neuer_wert": null
@@ -152,7 +152,7 @@
       {
         "timestamp": "2026-05-04T09:00:00",
         "typ": "status_geaendert",
-        "user": "Habegger Ursin",
+        "user": "Naef Ursin",
         "details": "Status geändert von 'Neu' zu 'In Prüfung'",
         "status": "In Prüfung",
         "alter_wert": "Neu",
@@ -161,7 +161,7 @@
       {
         "timestamp": "2026-05-05T11:00:00",
         "typ": "status_geaendert",
-        "user": "Habegger Ursin",
+        "user": "Naef Ursin",
         "details": "Status geändert von 'In Prüfung' zu 'Zugewiesen'",
         "status": "Zugewiesen",
         "alter_wert": "In Prüfung",
@@ -170,21 +170,21 @@
       {
         "timestamp": "2026-05-05T11:00:00",
         "typ": "zugewiesen",
-        "user": "Habegger Ursin",
-        "details": "Zugewiesen an Vial Hubert (KONSTRUKTION)",
+        "user": "Naef Ursin",
+        "details": "Zugewiesen an Naef Ursin (Qualitätssicherung)",
         "status": "Zugewiesen",
         "alter_wert": null,
-        "neuer_wert": "Vial Hubert"
+        "neuer_wert": "Naef Ursin"
       }
     ],
     "kommentare": []
   },
   {
     "qm_id": 3,
-    "qm_nummer": "QM-2026-003",
-    "erfasser_kuerzel": "KT",
-    "erfasser_abteilung": "ELEKTRO_ENTWICKLUNG",
-    "involvierte": "Blatter Placi",
+    "qm_nummer": "26QM10002",
+    "erfasser_kuerzel": "SD",
+    "erfasser_abteilung": "Hotline",
+    "involvierte": "Piller Nils",
     "titel": "Kritischer Sicherheitsfehler in der Notabschaltung",
     "beschreibung": "Bei aktivierter Notabschaltung kann es unter bestimmten Bedingungen zu einer Verzögerung von bis zu 2 Sekunden kommen, bevor die Anlage tatsächlich stoppt. Dies stellt ein erhebliches Sicherheitsrisiko dar.",
     "wunsch_oder_mangel": "Mangel",
@@ -204,8 +204,8 @@
     "minor_major": "Major",
     "prioritaet": "Kritisch",
     "termin_geplante_umsetzung": "2026-05-15",
-    "abteilung": "ELEKTRO_ENTWICKLUNG",
-    "zugewiesen_an": "Marmy Orlando",
+    "abteilung": "Elektroentwicklung",
+    "zugewiesen_an": "Nydegger Orlando",
     "faellig_am": "2026-05-15",
     "bearbeitung_extern": false,
     "ticket_nr_extern": null,
@@ -215,14 +215,14 @@
     "software_referenz_release": null,
     "hardware_aenderungsindex": null,
     "erstellt_am": "2026-05-07T07:00:00",
-    "ersteller": "Weibel Iso",
+    "ersteller": "Scherrer Duri",
     "status": "In Bearbeitung",
     "history": [
       {
         "timestamp": "2026-05-07T07:00:00",
         "typ": "erstellt",
-        "user": "Weibel Iso",
-        "details": "QM QM-2026-003 wurde erstellt",
+        "user": "Scherrer Duri",
+        "details": "QM 26QM10002 wurde erstellt",
         "status": "Neu",
         "alter_wert": null,
         "neuer_wert": null
@@ -230,7 +230,7 @@
       {
         "timestamp": "2026-05-07T08:00:00",
         "typ": "prioritaet_geaendert",
-        "user": "Habegger Ursin",
+        "user": "Chappuis Placi",
         "details": "Priorität geändert von 'Hoch' zu 'Kritisch'",
         "status": "Neu",
         "alter_wert": "Hoch",
@@ -239,7 +239,7 @@
       {
         "timestamp": "2026-05-07T08:15:00",
         "typ": "status_geaendert",
-        "user": "Habegger Ursin",
+        "user": "Chappuis Placi",
         "details": "Status geändert von 'Neu' zu 'In Prüfung'",
         "status": "In Prüfung",
         "alter_wert": "Neu",
@@ -248,7 +248,7 @@
       {
         "timestamp": "2026-05-07T08:45:00",
         "typ": "status_geaendert",
-        "user": "Blatter Placi",
+        "user": "Chappuis Placi",
         "details": "Status geändert von 'In Prüfung' zu 'Zugewiesen'",
         "status": "Zugewiesen",
         "alter_wert": "In Prüfung",
@@ -257,16 +257,16 @@
       {
         "timestamp": "2026-05-07T09:00:00",
         "typ": "zugewiesen",
-        "user": "Blatter Placi",
-        "details": "Zugewiesen an Marmy Orlando (ELEKTRO_ENTWICKLUNG)",
+        "user": "Chappuis Placi",
+        "details": "Zugewiesen an Nydegger Orlando (Elektroentwicklung)",
         "status": "Zugewiesen",
         "alter_wert": null,
-        "neuer_wert": "Marmy Orlando"
+        "neuer_wert": "Nydegger Orlando"
       },
       {
         "timestamp": "2026-05-07T10:30:00",
         "typ": "status_geaendert",
-        "user": "Marmy Orlando",
+        "user": "Nydegger Orlando",
         "details": "Status geändert von 'Zugewiesen' zu 'In Bearbeitung'",
         "status": "In Bearbeitung",
         "alter_wert": "Zugewiesen",
@@ -275,8 +275,8 @@
       {
         "timestamp": "2026-05-08T14:00:00",
         "typ": "kommentar",
-        "user": "Marmy Orlando",
-        "details": "Kommentar hinzugefügt: Problem lokalisiert. Relay-Ansteuerung hat einen Race-Condition-Fehler. Hardware-Revi...",
+        "user": "Nydegger Orlando",
+        "details": "Kommentar hinzugefügt: Problem lokalisiert...",
         "status": "In Bearbeitung",
         "alter_wert": null,
         "neuer_wert": null
@@ -285,17 +285,17 @@
     "kommentare": [
       {
         "timestamp": "2026-05-08T14:00:00",
-        "user": "Marmy Orlando",
+        "user": "Nydegger Orlando",
         "text": "Problem lokalisiert. Relay-Ansteuerung hat einen Race-Condition-Fehler. Hardware-Revision wird vorbereitet."
       }
     ]
   },
   {
     "qm_id": 4,
-    "qm_nummer": "QM-2026-004",
-    "erfasser_kuerzel": "FC",
-    "erfasser_abteilung": "SOFTWARE_ENTWICKLUNG",
-    "involvierte": null,
+    "qm_nummer": "26QM10003",
+    "erfasser_kuerzel": "GQ",
+    "erfasser_abteilung": "Verkauf",
+    "involvierte": "Etter Kuere",
     "titel": "Feature Request: Exportfunktion für Statistiken",
     "beschreibung": "Kunden wünschen sich eine Exportfunktion für die Produktionsstatistiken im CSV- oder Excel-Format. Dies würde die Weiterverarbeitung der Daten erheblich erleichtern.",
     "wunsch_oder_mangel": "Wunsch",
@@ -315,7 +315,7 @@
     "minor_major": null,
     "prioritaet": "Niedrig",
     "termin_geplante_umsetzung": null,
-    "abteilung": "SOFTWARE_ENTWICKLUNG",
+    "abteilung": null,
     "zugewiesen_an": null,
     "faellig_am": null,
     "bearbeitung_extern": false,
@@ -326,14 +326,14 @@
     "software_referenz_release": null,
     "hardware_aenderungsindex": null,
     "erstellt_am": "2026-05-08T15:30:00",
-    "ersteller": "Berthoud Valerio",
+    "ersteller": "Gonseth Quirin",
     "status": "In Prüfung",
     "history": [
       {
         "timestamp": "2026-05-08T15:30:00",
         "typ": "erstellt",
-        "user": "Berthoud Valerio",
-        "details": "QM QM-2026-004 wurde erstellt",
+        "user": "Gonseth Quirin",
+        "details": "QM 26QM10003 wurde erstellt",
         "status": "Neu",
         "alter_wert": null,
         "neuer_wert": null
@@ -341,7 +341,7 @@
       {
         "timestamp": "2026-05-09T09:00:00",
         "typ": "status_geaendert",
-        "user": "Habegger Ursin",
+        "user": "Chappuis Placi",
         "details": "Status geändert von 'Neu' zu 'In Prüfung'",
         "status": "In Prüfung",
         "alter_wert": "Neu",
@@ -352,10 +352,10 @@
   },
   {
     "qm_id": 5,
-    "qm_nummer": "QM-2026-005",
-    "erfasser_kuerzel": "DD",
-    "erfasser_abteilung": "MONTAGE",
-    "involvierte": "Schoch Hugo",
+    "qm_nummer": "26QM10004",
+    "erfasser_kuerzel": "KT",
+    "erfasser_abteilung": "Montage",
+    "involvierte": null,
     "titel": "Montagefehler bei Hydraulikschlauch-Verbindung",
     "beschreibung": "Bei der Montage der Anlage bei Kunde Schmidt GmbH wurde festgestellt, dass die Hydraulikschlauch-Verbindung am falschen Anschluss montiert wurde. Dies führte zu einem Leckage-Problem.",
     "wunsch_oder_mangel": "Mangel",
@@ -375,8 +375,8 @@
     "minor_major": "Major",
     "prioritaet": "Hoch",
     "termin_geplante_umsetzung": "2026-05-12",
-    "abteilung": "MONTAGE",
-    "zugewiesen_an": "Hirschy Ephrem",
+    "abteilung": "Konstruktion",
+    "zugewiesen_an": "Hirschy Mario",
     "faellig_am": "2026-05-12",
     "bearbeitung_extern": false,
     "ticket_nr_extern": null,
@@ -393,7 +393,7 @@
         "timestamp": "2026-05-09T10:00:00",
         "typ": "erstellt",
         "user": "Knecht Thom",
-        "details": "QM QM-2026-005 wurde erstellt",
+        "details": "QM 26QM10004 wurde erstellt",
         "status": "Neu",
         "alter_wert": null,
         "neuer_wert": null
@@ -401,7 +401,7 @@
       {
         "timestamp": "2026-05-09T10:30:00",
         "typ": "status_geaendert",
-        "user": "Schoch Hugo",
+        "user": "Chappuis Placi",
         "details": "Status geändert von 'Neu' zu 'In Prüfung'",
         "status": "In Prüfung",
         "alter_wert": "Neu",
@@ -410,7 +410,7 @@
       {
         "timestamp": "2026-05-09T10:45:00",
         "typ": "status_geaendert",
-        "user": "Schoch Hugo",
+        "user": "Chappuis Placi",
         "details": "Status geändert von 'In Prüfung' zu 'Zugewiesen'",
         "status": "Zugewiesen",
         "alter_wert": "In Prüfung",
@@ -419,16 +419,16 @@
       {
         "timestamp": "2026-05-09T11:00:00",
         "typ": "zugewiesen",
-        "user": "Schoch Hugo",
-        "details": "Zugewiesen an Hirschy Ephrem (MONTAGE)",
+        "user": "Chappuis Placi",
+        "details": "Zugewiesen an Hirschy Mario (Konstruktion)",
         "status": "Zugewiesen",
         "alter_wert": null,
-        "neuer_wert": "Hirschy Ephrem"
+        "neuer_wert": "Hirschy Mario"
       },
       {
         "timestamp": "2026-05-09T13:00:00",
         "typ": "status_geaendert",
-        "user": "Hirschy Ephrem",
+        "user": "Hirschy Mario",
         "details": "Status geändert von 'Zugewiesen' zu 'In Bearbeitung'",
         "status": "In Bearbeitung",
         "alter_wert": "Zugewiesen",
@@ -437,7 +437,7 @@
       {
         "timestamp": "2026-05-09T16:45:00",
         "typ": "status_geaendert",
-        "user": "Hirschy Ephrem",
+        "user": "Hirschy Mario",
         "details": "Status geändert von 'In Bearbeitung' zu 'Behoben'",
         "status": "Behoben",
         "alter_wert": "In Bearbeitung",
@@ -446,8 +446,8 @@
       {
         "timestamp": "2026-05-09T16:46:00",
         "typ": "kommentar",
-        "user": "Hirschy Ephrem",
-        "details": "Kommentar hinzugefügt: Schlauchverbindung korrigiert und auf Dichtigkeit geprüft. Problem behoben...",
+        "user": "Hirschy Mario",
+        "details": "Kommentar hinzugefügt: Schlauchverbindung korrigiert...",
         "status": "Behoben",
         "alter_wert": null,
         "neuer_wert": null
@@ -455,7 +455,7 @@
       {
         "timestamp": "2026-05-10T08:00:00",
         "typ": "status_geaendert",
-        "user": "Schoch Hugo",
+        "user": "Chappuis Placi",
         "details": "Status geändert von 'Behoben' zu 'Abgeschlossen'",
         "status": "Abgeschlossen",
         "alter_wert": "Behoben",
@@ -465,17 +465,17 @@
     "kommentare": [
       {
         "timestamp": "2026-05-09T16:46:00",
-        "user": "Hirschy Ephrem",
+        "user": "Hirschy Mario",
         "text": "Schlauchverbindung korrigiert und auf Dichtigkeit geprüft. Problem behoben."
       }
     ]
   },
   {
     "qm_id": 6,
-    "qm_nummer": "QM-2026-006",
-    "erfasser_kuerzel": "ET",
-    "erfasser_abteilung": "KONSTRUKTION",
-    "involvierte": "Habegger Ursin",
+    "qm_nummer": "26QM10005",
+    "erfasser_kuerzel": "LM",
+    "erfasser_abteilung": "Inbetriebnahme",
+    "involvierte": null,
     "titel": "Ungenaue Darstellung in technischer Zeichnung",
     "beschreibung": "Technische Zeichnung TZ-4523 enthält ungenaue Maßangaben für die Befestigungsbohrungen. Die tatsächlichen Maße weichen um 2mm ab.",
     "wunsch_oder_mangel": "Mangel",
@@ -495,8 +495,8 @@
     "minor_major": "Minor",
     "prioritaet": "Mittel",
     "termin_geplante_umsetzung": "2026-05-25",
-    "abteilung": "KONSTRUKTION",
-    "zugewiesen_an": "Repond Meinrad",
+    "abteilung": "Qualitätssicherung",
+    "zugewiesen_an": "Schoch Jodok",
     "faellig_am": "2026-05-25",
     "bearbeitung_extern": false,
     "ticket_nr_extern": null,
@@ -506,14 +506,14 @@
     "software_referenz_release": null,
     "hardware_aenderungsindex": "Rev. 3",
     "erstellt_am": "2026-05-08T11:20:00",
-    "ersteller": "Aellen Pankraz",
+    "ersteller": "Landolt Marco",
     "status": "In Bearbeitung",
     "history": [
       {
         "timestamp": "2026-05-08T11:20:00",
         "typ": "erstellt",
-        "user": "Aellen Pankraz",
-        "details": "QM QM-2026-006 wurde erstellt",
+        "user": "Landolt Marco",
+        "details": "QM 26QM10005 wurde erstellt",
         "status": "Neu",
         "alter_wert": null,
         "neuer_wert": null
@@ -521,7 +521,7 @@
       {
         "timestamp": "2026-05-08T14:00:00",
         "typ": "status_geaendert",
-        "user": "Habegger Ursin",
+        "user": "Chappuis Placi",
         "details": "Status geändert von 'Neu' zu 'In Prüfung'",
         "status": "In Prüfung",
         "alter_wert": "Neu",
@@ -530,7 +530,7 @@
       {
         "timestamp": "2026-05-09T08:15:00",
         "typ": "status_geaendert",
-        "user": "Habegger Ursin",
+        "user": "Chappuis Placi",
         "details": "Status geändert von 'In Prüfung' zu 'Zugewiesen'",
         "status": "Zugewiesen",
         "alter_wert": "In Prüfung",
@@ -539,16 +539,16 @@
       {
         "timestamp": "2026-05-09T08:30:00",
         "typ": "zugewiesen",
-        "user": "Habegger Ursin",
-        "details": "Zugewiesen an Repond Meinrad (KONSTRUKTION)",
+        "user": "Chappuis Placi",
+        "details": "Zugewiesen an Schoch Jodok (Qualitätssicherung)",
         "status": "Zugewiesen",
         "alter_wert": null,
-        "neuer_wert": "Repond Meinrad"
+        "neuer_wert": "Schoch Jodok"
       },
       {
         "timestamp": "2026-05-09T10:00:00",
         "typ": "status_geaendert",
-        "user": "Repond Meinrad",
+        "user": "Schoch Jodok",
         "details": "Status geändert von 'Zugewiesen' zu 'In Bearbeitung'",
         "status": "In Bearbeitung",
         "alter_wert": "Zugewiesen",
@@ -557,7 +557,7 @@
       {
         "timestamp": "2026-05-10T09:00:00",
         "typ": "pausiert",
-        "user": "Repond Meinrad",
+        "user": "Schoch Jodok",
         "details": "Bearbeitung pausiert: Wartet auf Freigabe der korrigierten Zeichnung durch Konstruktionsleitung",
         "status": "Pausiert",
         "alter_wert": "In Bearbeitung",
@@ -566,7 +566,7 @@
       {
         "timestamp": "2026-05-12T09:00:00",
         "typ": "fortgesetzt",
-        "user": "Repond Meinrad",
+        "user": "Schoch Jodok",
         "details": "Bearbeitung fortgesetzt",
         "status": "In Bearbeitung",
         "alter_wert": "Pausiert",
@@ -577,9 +577,9 @@
   },
   {
     "qm_id": 7,
-    "qm_nummer": "QM-2026-007",
-    "erfasser_kuerzel": "RM",
-    "erfasser_abteilung": null,
+    "qm_nummer": "26QM10006",
+    "erfasser_kuerzel": "ZE",
+    "erfasser_abteilung": "Vorführung",
     "involvierte": null,
     "titel": "Software-Abstürze bei großen Datenmengen",
     "beschreibung": "Die Software stürzt ab, wenn mehr als 10.000 Datensätze gleichzeitig verarbeitet werden. Dies tritt besonders bei der Auswertung von Langzeit-Produktionsdaten auf.",
@@ -611,14 +611,14 @@
     "software_referenz_release": null,
     "hardware_aenderungsindex": null,
     "erstellt_am": "2026-05-09T13:45:00",
-    "ersteller": "Kellenberger Pankraz",
+    "ersteller": "Zbinden Elio",
     "status": "Neu",
     "history": [
       {
         "timestamp": "2026-05-09T13:45:00",
         "typ": "erstellt",
-        "user": "Kellenberger Pankraz",
-        "details": "QM QM-2026-007 wurde erstellt",
+        "user": "Zbinden Elio",
+        "details": "QM 26QM10006 wurde erstellt",
         "status": "Neu",
         "alter_wert": null,
         "neuer_wert": null
@@ -628,10 +628,10 @@
   },
   {
     "qm_id": 8,
-    "qm_nummer": "QM-2026-008",
-    "erfasser_kuerzel": "KJ",
-    "erfasser_abteilung": null,
-    "involvierte": "Overney Nils",
+    "qm_nummer": "26QM10007",
+    "erfasser_kuerzel": "BV",
+    "erfasser_abteilung": "Verkauf",
+    "involvierte": null,
     "titel": "Kunde wünscht verbesserte Benutzeroberfläche",
     "beschreibung": "Mehrere Kunden haben Feedback gegeben, dass die Benutzeroberfläche der Steuerung nicht intuitiv genug ist. Besonders die Menüführung und Icon-Darstellung könnten verbessert werden.",
     "wunsch_oder_mangel": "Wunsch",
@@ -662,14 +662,14 @@
     "software_referenz_release": null,
     "hardware_aenderungsindex": null,
     "erstellt_am": "2026-05-07T16:00:00",
-    "ersteller": "Baertschi Cornel",
+    "ersteller": "Berthoud Valerio",
     "status": "Abgebrochen",
     "history": [
       {
         "timestamp": "2026-05-07T16:00:00",
         "typ": "erstellt",
-        "user": "Baertschi Cornel",
-        "details": "QM QM-2026-008 wurde erstellt",
+        "user": "Berthoud Valerio",
+        "details": "QM 26QM10007 wurde erstellt",
         "status": "Neu",
         "alter_wert": null,
         "neuer_wert": null
@@ -677,7 +677,7 @@
       {
         "timestamp": "2026-05-08T09:00:00",
         "typ": "status_geaendert",
-        "user": "Overney Nils",
+        "user": "Chappuis Placi",
         "details": "Status geändert von 'Neu' zu 'In Prüfung'",
         "status": "In Prüfung",
         "alter_wert": "Neu",
@@ -686,7 +686,7 @@
       {
         "timestamp": "2026-05-08T10:30:00",
         "typ": "abgebrochen",
-        "user": "Overney Nils",
+        "user": "Chappuis Placi",
         "details": "QM abgebrochen: UI wurde erst kürzlich komplett überarbeitet, Änderungen würden zu hohen Kosten führen",
         "status": "Abgebrochen",
         "alter_wert": "In Prüfung",
@@ -695,8 +695,8 @@
       {
         "timestamp": "2026-05-08T10:31:00",
         "typ": "kommentar",
-        "user": "Overney Nils",
-        "details": "Kommentar hinzugefügt: UI wurde erst kürzlich komplett überarbeitet. Änderungen würden zu hohen Kosten führen. Für n...",
+        "user": "Chappuis Placi",
+        "details": "Kommentar hinzugefügt: UI wurde erst kürzlich komplett überarbeitet...",
         "status": "Abgebrochen",
         "alter_wert": null,
         "neuer_wert": null
@@ -705,8 +705,593 @@
     "kommentare": [
       {
         "timestamp": "2026-05-08T10:31:00",
-        "user": "Overney Nils",
+        "user": "Chappuis Placi",
         "text": "UI wurde erst kürzlich komplett überarbeitet. Änderungen würden zu hohen Kosten führen. Für nächste Version vorgemerkt."
+      }
+    ]
+  },
+  {
+    "qm_id": 9,
+    "qm_nummer": "26QM10008",
+    "erfasser_kuerzel": "MW",
+    "erfasser_abteilung": "Kundendienst",
+    "involvierte": "Gassmann Flavio",
+    "titel": "Exportierte CSV-Dateien haben falsches Encoding",
+    "beschreibung": "Beim Export von Produktionsstatistiken als CSV werden Umlaute in Excel falsch dargestellt. Kunden müssen die Dateien manuell nachbearbeiten.",
+    "wunsch_oder_mangel": "Mangel",
+    "sicherheitsrelevant": false,
+    "hauptkategorie": "Software",
+    "ist_software": true,
+    "plc": false,
+    "plc_version": null,
+    "nc": false,
+    "nc_version": null,
+    "mcm": false,
+    "maschinentyp": "Dashboard v2.3",
+    "serie_oder_einzelfall": "Serie",
+    "kundenrueckmeldung_noetig": true,
+    "ticket_nr_intern": "INT-4102",
+    "kontaktperson_servicetechniker": null,
+    "minor_major": null,
+    "prioritaet": "Mittel",
+    "termin_geplante_umsetzung": null,
+    "abteilung": "Softwareentwicklung",
+    "zugewiesen_an": "Aebischer Silvio",
+    "faellig_am": null,
+    "bearbeitung_extern": false,
+    "ticket_nr_extern": null,
+    "korrespondenz_extern": null,
+    "statuseintraege_vorhanden": false,
+    "anleitung_link": null,
+    "software_referenz_release": null,
+    "hardware_aenderungsindex": null,
+    "erstellt_am": "2026-06-25T08:00:00",
+    "ersteller": "Mettler Walo",
+    "status": "Zugewiesen",
+    "history": [
+      {
+        "timestamp": "2026-06-25T08:00:00",
+        "typ": "erstellt",
+        "user": "Mettler Walo",
+        "details": "QM 26QM10008 wurde erstellt",
+        "status": "Neu",
+        "alter_wert": null,
+        "neuer_wert": null
+      },
+      {
+        "timestamp": "2026-06-25T09:00:00",
+        "typ": "status_geaendert",
+        "user": "Chappuis Placi",
+        "details": "Status geändert von 'Neu' zu 'In Prüfung'",
+        "status": "In Prüfung",
+        "alter_wert": "Neu",
+        "neuer_wert": "In Prüfung"
+      },
+      {
+        "timestamp": "2026-06-26T10:00:00",
+        "typ": "status_geaendert",
+        "user": "Chappuis Placi",
+        "details": "Status geändert von 'In Prüfung' zu 'Zugewiesen'",
+        "status": "Zugewiesen",
+        "alter_wert": "In Prüfung",
+        "neuer_wert": "Zugewiesen"
+      },
+      {
+        "timestamp": "2026-06-26T10:00:00",
+        "typ": "zugewiesen",
+        "user": "Chappuis Placi",
+        "details": "Zugewiesen an Aebischer Silvio (Softwareentwicklung)",
+        "status": "Zugewiesen",
+        "alter_wert": null,
+        "neuer_wert": "Aebischer Silvio"
+      }
+    ],
+    "kommentare": []
+  },
+  {
+    "qm_id": 10,
+    "qm_nummer": "26QM10009",
+    "erfasser_kuerzel": "VK",
+    "erfasser_abteilung": "Montage",
+    "involvierte": "Thommen Silas",
+    "titel": "Förderband stoppt sporadisch ohne Fehlermeldung",
+    "beschreibung": "Bei der Inbetriebnahme wurde festgestellt, dass das Förderband FB-200 gelegentlich ohne ersichtlichen Grund stoppt. Ein Sensor scheint locker montiert zu sein.",
+    "wunsch_oder_mangel": "Mangel",
+    "sicherheitsrelevant": false,
+    "hauptkategorie": "Mechanik",
+    "ist_software": false,
+    "plc": false,
+    "plc_version": null,
+    "nc": false,
+    "nc_version": null,
+    "mcm": false,
+    "maschinentyp": "Förderband FB-200",
+    "serie_oder_einzelfall": "Serie",
+    "kundenrueckmeldung_noetig": false,
+    "ticket_nr_intern": null,
+    "kontaktperson_servicetechniker": null,
+    "minor_major": null,
+    "prioritaet": "Hoch",
+    "termin_geplante_umsetzung": null,
+    "abteilung": "Konstruktion",
+    "zugewiesen_an": "Sturzenegger Meinrad",
+    "faellig_am": null,
+    "bearbeitung_extern": false,
+    "ticket_nr_extern": null,
+    "korrespondenz_extern": null,
+    "statuseintraege_vorhanden": false,
+    "anleitung_link": null,
+    "software_referenz_release": null,
+    "hardware_aenderungsindex": "Rev. A",
+    "erstellt_am": "2026-06-28T08:00:00",
+    "ersteller": "Vial Kaspar",
+    "status": "Abgeschlossen",
+    "history": [
+      {
+        "timestamp": "2026-06-28T08:00:00",
+        "typ": "erstellt",
+        "user": "Vial Kaspar",
+        "details": "QM 26QM10009 wurde erstellt",
+        "status": "Neu",
+        "alter_wert": null,
+        "neuer_wert": null
+      },
+      {
+        "timestamp": "2026-06-28T09:00:00",
+        "typ": "status_geaendert",
+        "user": "Chappuis Placi",
+        "details": "Status geändert von 'Neu' zu 'In Prüfung'",
+        "status": "In Prüfung",
+        "alter_wert": "Neu",
+        "neuer_wert": "In Prüfung"
+      },
+      {
+        "timestamp": "2026-06-28T09:30:00",
+        "typ": "status_geaendert",
+        "user": "Chappuis Placi",
+        "details": "Status geändert von 'In Prüfung' zu 'Zugewiesen'",
+        "status": "Zugewiesen",
+        "alter_wert": "In Prüfung",
+        "neuer_wert": "Zugewiesen"
+      },
+      {
+        "timestamp": "2026-06-28T09:30:00",
+        "typ": "zugewiesen",
+        "user": "Chappuis Placi",
+        "details": "Zugewiesen an Sturzenegger Meinrad (Konstruktion)",
+        "status": "Zugewiesen",
+        "alter_wert": null,
+        "neuer_wert": "Sturzenegger Meinrad"
+      },
+      {
+        "timestamp": "2026-06-29T08:00:00",
+        "typ": "status_geaendert",
+        "user": "Sturzenegger Meinrad",
+        "details": "Status geändert von 'Zugewiesen' zu 'In Bearbeitung'",
+        "status": "In Bearbeitung",
+        "alter_wert": "Zugewiesen",
+        "neuer_wert": "In Bearbeitung"
+      },
+      {
+        "timestamp": "2026-07-01T15:00:00",
+        "typ": "status_geaendert",
+        "user": "Sturzenegger Meinrad",
+        "details": "Status geändert von 'In Bearbeitung' zu 'Behoben'",
+        "status": "Behoben",
+        "alter_wert": "In Bearbeitung",
+        "neuer_wert": "Behoben"
+      },
+      {
+        "timestamp": "2026-07-01T15:05:00",
+        "typ": "kommentar",
+        "user": "Sturzenegger Meinrad",
+        "details": "Kommentar hinzugefügt: Sensor neu befestigt und Kabel fixiert...",
+        "status": "Behoben",
+        "alter_wert": null,
+        "neuer_wert": null
+      },
+      {
+        "timestamp": "2026-07-02T09:00:00",
+        "typ": "status_geaendert",
+        "user": "Chappuis Placi",
+        "details": "Status geändert von 'Behoben' zu 'Abgeschlossen'",
+        "status": "Abgeschlossen",
+        "alter_wert": "Behoben",
+        "neuer_wert": "Abgeschlossen"
+      }
+    ],
+    "kommentare": [
+      {
+        "timestamp": "2026-07-01T15:05:00",
+        "user": "Sturzenegger Meinrad",
+        "text": "Sensor neu befestigt und Kabel fixiert. Bei Testlauf keine Aussetzer mehr."
+      }
+    ]
+  },
+  {
+    "qm_id": 11,
+    "qm_nummer": "26QM10010",
+    "erfasser_kuerzel": "JJ",
+    "erfasser_abteilung": "Vorführung",
+    "involvierte": null,
+    "titel": "Anwendungstest: Diagrammansicht friert bei Zoom ein",
+    "beschreibung": "Beim Hineinzoomen in die Diagrammansicht der Steuerungs-UI friert die Anwendung für mehrere Sekunden ein. Betrifft vor allem grosse Datensätze.",
+    "wunsch_oder_mangel": "Mangel",
+    "sicherheitsrelevant": false,
+    "hauptkategorie": "Applikation",
+    "ist_software": true,
+    "plc": false,
+    "plc_version": null,
+    "nc": false,
+    "nc_version": null,
+    "mcm": false,
+    "maschinentyp": "Steuerungs-UI v3.1",
+    "serie_oder_einzelfall": "Serie",
+    "kundenrueckmeldung_noetig": false,
+    "ticket_nr_intern": null,
+    "kontaktperson_servicetechniker": null,
+    "minor_major": null,
+    "prioritaet": "Mittel",
+    "termin_geplante_umsetzung": null,
+    "abteilung": "Entwicklung Anwendungstest",
+    "zugewiesen_an": "Wanner Andri",
+    "faellig_am": null,
+    "bearbeitung_extern": false,
+    "ticket_nr_extern": null,
+    "korrespondenz_extern": null,
+    "statuseintraege_vorhanden": false,
+    "anleitung_link": null,
+    "software_referenz_release": null,
+    "hardware_aenderungsindex": null,
+    "erstellt_am": "2026-06-20T08:00:00",
+    "ersteller": "Jaton Jodok",
+    "status": "In Bearbeitung",
+    "history": [
+      {
+        "timestamp": "2026-06-20T08:00:00",
+        "typ": "erstellt",
+        "user": "Jaton Jodok",
+        "details": "QM 26QM10010 wurde erstellt",
+        "status": "Neu",
+        "alter_wert": null,
+        "neuer_wert": null
+      },
+      {
+        "timestamp": "2026-06-20T09:00:00",
+        "typ": "status_geaendert",
+        "user": "Chappuis Placi",
+        "details": "Status geändert von 'Neu' zu 'In Prüfung'",
+        "status": "In Prüfung",
+        "alter_wert": "Neu",
+        "neuer_wert": "In Prüfung"
+      },
+      {
+        "timestamp": "2026-06-21T09:00:00",
+        "typ": "status_geaendert",
+        "user": "Chappuis Placi",
+        "details": "Status geändert von 'In Prüfung' zu 'Zugewiesen'",
+        "status": "Zugewiesen",
+        "alter_wert": "In Prüfung",
+        "neuer_wert": "Zugewiesen"
+      },
+      {
+        "timestamp": "2026-06-21T09:00:00",
+        "typ": "zugewiesen",
+        "user": "Chappuis Placi",
+        "details": "Zugewiesen an Wanner Andri (Entwicklung Anwendungstest)",
+        "status": "Zugewiesen",
+        "alter_wert": null,
+        "neuer_wert": "Wanner Andri"
+      },
+      {
+        "timestamp": "2026-06-22T08:00:00",
+        "typ": "status_geaendert",
+        "user": "Wanner Andri",
+        "details": "Status geändert von 'Zugewiesen' zu 'In Bearbeitung'",
+        "status": "In Bearbeitung",
+        "alter_wert": "Zugewiesen",
+        "neuer_wert": "In Bearbeitung"
+      }
+    ],
+    "kommentare": []
+  },
+  {
+    "qm_id": 12,
+    "qm_nummer": "26QM10011",
+    "erfasser_kuerzel": "IF",
+    "erfasser_abteilung": "Hotline",
+    "involvierte": null,
+    "titel": "Hotline-Kunden vermissen Suchfunktion in der UI",
+    "beschreibung": "Mehrere Hotline-Anrufer berichten, dass sie in der Steuerungs-UI keine Möglichkeit finden, Anlagenparameter direkt zu suchen.",
+    "wunsch_oder_mangel": "Wunsch",
+    "sicherheitsrelevant": false,
+    "hauptkategorie": "Applikation",
+    "ist_software": true,
+    "plc": false,
+    "plc_version": null,
+    "nc": false,
+    "nc_version": null,
+    "mcm": false,
+    "maschinentyp": "Steuerungs-UI v3.1",
+    "serie_oder_einzelfall": "Serie",
+    "kundenrueckmeldung_noetig": true,
+    "ticket_nr_intern": null,
+    "kontaktperson_servicetechniker": null,
+    "minor_major": null,
+    "prioritaet": "Niedrig",
+    "termin_geplante_umsetzung": null,
+    "abteilung": "Entwicklung Anwendungstest",
+    "zugewiesen_an": "Ruckstuhl Leandro",
+    "faellig_am": null,
+    "bearbeitung_extern": false,
+    "ticket_nr_extern": null,
+    "korrespondenz_extern": null,
+    "statuseintraege_vorhanden": false,
+    "anleitung_link": null,
+    "software_referenz_release": null,
+    "hardware_aenderungsindex": null,
+    "erstellt_am": "2026-06-30T08:00:00",
+    "ersteller": "Iseli Fritz",
+    "status": "Zugewiesen",
+    "history": [
+      {
+        "timestamp": "2026-06-30T08:00:00",
+        "typ": "erstellt",
+        "user": "Iseli Fritz",
+        "details": "QM 26QM10011 wurde erstellt",
+        "status": "Neu",
+        "alter_wert": null,
+        "neuer_wert": null
+      },
+      {
+        "timestamp": "2026-06-30T09:00:00",
+        "typ": "status_geaendert",
+        "user": "Chappuis Placi",
+        "details": "Status geändert von 'Neu' zu 'In Prüfung'",
+        "status": "In Prüfung",
+        "alter_wert": "Neu",
+        "neuer_wert": "In Prüfung"
+      },
+      {
+        "timestamp": "2026-07-01T09:00:00",
+        "typ": "status_geaendert",
+        "user": "Chappuis Placi",
+        "details": "Status geändert von 'In Prüfung' zu 'Zugewiesen'",
+        "status": "Zugewiesen",
+        "alter_wert": "In Prüfung",
+        "neuer_wert": "Zugewiesen"
+      },
+      {
+        "timestamp": "2026-07-01T09:00:00",
+        "typ": "zugewiesen",
+        "user": "Chappuis Placi",
+        "details": "Zugewiesen an Ruckstuhl Leandro (Entwicklung Anwendungstest)",
+        "status": "Zugewiesen",
+        "alter_wert": null,
+        "neuer_wert": "Ruckstuhl Leandro"
+      }
+    ],
+    "kommentare": []
+  },
+  {
+    "qm_id": 13,
+    "qm_nummer": "26QM10012",
+    "erfasser_kuerzel": "BV",
+    "erfasser_abteilung": "Verkauf",
+    "involvierte": null,
+    "titel": "Sicherheitsmodul löst bei Vibration Fehlalarm aus",
+    "beschreibung": "Das Sicherheitsmodul SM-2100 löst bei starken Vibrationen der Anlage einen Fehlalarm aus, obwohl kein Sicherheitsrisiko besteht.",
+    "wunsch_oder_mangel": "Mangel",
+    "sicherheitsrelevant": true,
+    "hauptkategorie": "Elektro",
+    "ist_software": false,
+    "plc": false,
+    "plc_version": null,
+    "nc": false,
+    "nc_version": null,
+    "mcm": false,
+    "maschinentyp": "Sicherheitsmodul SM-2100",
+    "serie_oder_einzelfall": "Serie",
+    "kundenrueckmeldung_noetig": false,
+    "ticket_nr_intern": null,
+    "kontaktperson_servicetechniker": null,
+    "minor_major": null,
+    "prioritaet": "Hoch",
+    "termin_geplante_umsetzung": null,
+    "abteilung": "Elektroentwicklung",
+    "zugewiesen_an": "Vionnet Pankraz",
+    "faellig_am": null,
+    "bearbeitung_extern": false,
+    "ticket_nr_extern": null,
+    "korrespondenz_extern": null,
+    "statuseintraege_vorhanden": false,
+    "anleitung_link": null,
+    "software_referenz_release": null,
+    "hardware_aenderungsindex": null,
+    "erstellt_am": "2026-06-15T08:00:00",
+    "ersteller": "Berthoud Valerio",
+    "status": "Behoben",
+    "history": [
+      {
+        "timestamp": "2026-06-15T08:00:00",
+        "typ": "erstellt",
+        "user": "Berthoud Valerio",
+        "details": "QM 26QM10012 wurde erstellt",
+        "status": "Neu",
+        "alter_wert": null,
+        "neuer_wert": null
+      },
+      {
+        "timestamp": "2026-06-15T09:00:00",
+        "typ": "status_geaendert",
+        "user": "Chappuis Placi",
+        "details": "Status geändert von 'Neu' zu 'In Prüfung'",
+        "status": "In Prüfung",
+        "alter_wert": "Neu",
+        "neuer_wert": "In Prüfung"
+      },
+      {
+        "timestamp": "2026-06-16T09:00:00",
+        "typ": "status_geaendert",
+        "user": "Chappuis Placi",
+        "details": "Status geändert von 'In Prüfung' zu 'Zugewiesen'",
+        "status": "Zugewiesen",
+        "alter_wert": "In Prüfung",
+        "neuer_wert": "Zugewiesen"
+      },
+      {
+        "timestamp": "2026-06-16T09:00:00",
+        "typ": "zugewiesen",
+        "user": "Chappuis Placi",
+        "details": "Zugewiesen an Vionnet Pankraz (Elektroentwicklung)",
+        "status": "Zugewiesen",
+        "alter_wert": null,
+        "neuer_wert": "Vionnet Pankraz"
+      },
+      {
+        "timestamp": "2026-06-17T08:00:00",
+        "typ": "status_geaendert",
+        "user": "Vionnet Pankraz",
+        "details": "Status geändert von 'Zugewiesen' zu 'In Bearbeitung'",
+        "status": "In Bearbeitung",
+        "alter_wert": "Zugewiesen",
+        "neuer_wert": "In Bearbeitung"
+      },
+      {
+        "timestamp": "2026-06-22T14:00:00",
+        "typ": "status_geaendert",
+        "user": "Vionnet Pankraz",
+        "details": "Status geändert von 'In Bearbeitung' zu 'Behoben'",
+        "status": "Behoben",
+        "alter_wert": "In Bearbeitung",
+        "neuer_wert": "Behoben"
+      },
+      {
+        "timestamp": "2026-06-22T14:05:00",
+        "typ": "kommentar",
+        "user": "Vionnet Pankraz",
+        "details": "Kommentar hinzugefügt: Schwellwert der Vibrationssensoren angepasst...",
+        "status": "Behoben",
+        "alter_wert": null,
+        "neuer_wert": null
+      }
+    ],
+    "kommentare": [
+      {
+        "timestamp": "2026-06-22T14:05:00",
+        "user": "Vionnet Pankraz",
+        "text": "Schwellwert der Vibrationssensoren angepasst und im Testlauf verifiziert."
+      }
+    ]
+  },
+  {
+    "qm_id": 14,
+    "qm_nummer": "26QM10013",
+    "erfasser_kuerzel": "SC",
+    "erfasser_abteilung": "Kundendienst",
+    "involvierte": null,
+    "titel": "Dashboard lädt bei vielen Anlagen sehr langsam",
+    "beschreibung": "Bei Kunden mit mehr als 50 verbundenen Anlagen benötigt das Dashboard beim Laden teils über 30 Sekunden.",
+    "wunsch_oder_mangel": "Mangel",
+    "sicherheitsrelevant": false,
+    "hauptkategorie": "Software",
+    "ist_software": true,
+    "plc": false,
+    "plc_version": null,
+    "nc": false,
+    "nc_version": null,
+    "mcm": false,
+    "maschinentyp": "Dashboard v2.4",
+    "serie_oder_einzelfall": "Serie",
+    "kundenrueckmeldung_noetig": true,
+    "ticket_nr_intern": "INT-4188",
+    "kontaktperson_servicetechniker": null,
+    "minor_major": null,
+    "prioritaet": "Mittel",
+    "termin_geplante_umsetzung": null,
+    "abteilung": "Softwareentwicklung",
+    "zugewiesen_an": "Wicht Klemens",
+    "faellig_am": null,
+    "bearbeitung_extern": false,
+    "ticket_nr_extern": null,
+    "korrespondenz_extern": null,
+    "statuseintraege_vorhanden": false,
+    "anleitung_link": null,
+    "software_referenz_release": null,
+    "hardware_aenderungsindex": null,
+    "erstellt_am": "2026-06-10T08:00:00",
+    "ersteller": "Schilling Curdin",
+    "status": "Behoben",
+    "history": [
+      {
+        "timestamp": "2026-06-10T08:00:00",
+        "typ": "erstellt",
+        "user": "Schilling Curdin",
+        "details": "QM 26QM10013 wurde erstellt",
+        "status": "Neu",
+        "alter_wert": null,
+        "neuer_wert": null
+      },
+      {
+        "timestamp": "2026-06-10T09:00:00",
+        "typ": "status_geaendert",
+        "user": "Chappuis Placi",
+        "details": "Status geändert von 'Neu' zu 'In Prüfung'",
+        "status": "In Prüfung",
+        "alter_wert": "Neu",
+        "neuer_wert": "In Prüfung"
+      },
+      {
+        "timestamp": "2026-06-11T09:00:00",
+        "typ": "status_geaendert",
+        "user": "Chappuis Placi",
+        "details": "Status geändert von 'In Prüfung' zu 'Zugewiesen'",
+        "status": "Zugewiesen",
+        "alter_wert": "In Prüfung",
+        "neuer_wert": "Zugewiesen"
+      },
+      {
+        "timestamp": "2026-06-11T09:00:00",
+        "typ": "zugewiesen",
+        "user": "Chappuis Placi",
+        "details": "Zugewiesen an Wicht Klemens (Softwareentwicklung)",
+        "status": "Zugewiesen",
+        "alter_wert": null,
+        "neuer_wert": "Wicht Klemens"
+      },
+      {
+        "timestamp": "2026-06-12T08:00:00",
+        "typ": "status_geaendert",
+        "user": "Wicht Klemens",
+        "details": "Status geändert von 'Zugewiesen' zu 'In Bearbeitung'",
+        "status": "In Bearbeitung",
+        "alter_wert": "Zugewiesen",
+        "neuer_wert": "In Bearbeitung"
+      },
+      {
+        "timestamp": "2026-06-18T16:00:00",
+        "typ": "status_geaendert",
+        "user": "Wicht Klemens",
+        "details": "Status geändert von 'In Bearbeitung' zu 'Behoben'",
+        "status": "Behoben",
+        "alter_wert": "In Bearbeitung",
+        "neuer_wert": "Behoben"
+      },
+      {
+        "timestamp": "2026-06-18T16:05:00",
+        "typ": "kommentar",
+        "user": "Wicht Klemens",
+        "details": "Kommentar hinzugefügt: Datenbankabfragen optimiert und Caching eingeführt...",
+        "status": "Behoben",
+        "alter_wert": null,
+        "neuer_wert": null
+      }
+    ],
+    "kommentare": [
+      {
+        "timestamp": "2026-06-18T16:05:00",
+        "user": "Wicht Klemens",
+        "text": "Datenbankabfragen optimiert und Caching eingeführt. Ladezeit jetzt unter 3 Sekunden."
       }
     ]
   }
