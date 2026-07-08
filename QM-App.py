@@ -6,8 +6,10 @@ Abteilung, ein Planner-artiges Board mit Karten je Status, ein persönliches
 Bucket mit offenen QMs zum Übernehmen, und ein Detail-Dialog pro QM.
 """
 
+import statistics
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 from datetime import date, datetime, timedelta
 from enum import Enum, auto
 
@@ -86,6 +88,30 @@ STATUS_ICON = {
     QMStatus.ABGEBROCHEN.value: "❌",
 }
 PRIORITAET_FARBE = {"Niedrig": "gray", "Mittel": "blue", "Hoch": "orange", "Kritisch": "red"}
+
+# Icon je History-Eintragstyp, für die Verlaufs-Timeline.
+VERLAUF_ICON = {
+    "erstellt": "🆕",
+    "status_geaendert": "➡️",
+    "zugewiesen": "👤",
+    "kommentar": "💬",
+    "bearbeitet": "✏️",
+    "pausiert": "⏸️",
+    "fortgesetzt": "▶️",
+    "wiedereroeffnet": "🔄",
+    "abgebrochen": "❌",
+}
+
+# Hauptpfad ohne Nebenzustände/Schlaufen - für die kompakte Übersicht in der Detailansicht.
+PROZESS_HAUPTPFAD = [
+    QMStatus.NEU.value, QMStatus.IN_PRUEFUNG.value, QMStatus.ZUGEWIESEN.value,
+    QMStatus.IN_BEARBEITUNG.value, QMStatus.BEHOBEN.value, QMStatus.ABGESCHLOSSEN.value,
+]
+HAUPTPFAD_KANTEN = set(zip(PROZESS_HAUPTPFAD, PROZESS_HAUPTPFAD[1:]))
+HAUPTPFAD_ANZEIGE_STATUS = {
+    QMStatus.PAUSIERT.value: QMStatus.IN_BEARBEITUNG.value,
+    QMStatus.WIEDEREROEFFNET.value: QMStatus.IN_PRUEFUNG.value,
+}
 
 # Felder je Prozessschritt - gleichzeitig die editierbaren Felder solange der QM in
 # diesem Status ist, UND die Gruppen für die "Alle Angaben"-Ansicht.
@@ -221,6 +247,22 @@ def finde_qm(qm_id):
         if qm.qm_id == qm_id:
             return qm
     return None
+
+
+def status_ereignis(qm, status_wert):
+    # "Neu" hat keinen eigenen status_geaendert-Eintrag - der erste History-Eintrag
+    # (erstellt) ist gleichzeitig das Erreichen von "Neu".
+    if status_wert == QMStatus.NEU.value:
+        return qm.history[0] if qm.history else None
+    for h in qm.history:
+        if h.neuer_wert == status_wert:
+            return h
+    return None
+
+
+def status_zeitpunkt(qm, status_wert):
+    ereignis = status_ereignis(qm, status_wert)
+    return ereignis.timestamp if ereignis else None
 
 
 def naechste_qm_id():
@@ -583,11 +625,110 @@ def render_gruppe_tab(qm, gruppen_key, felder, editierbar):
         st.rerun()
 
 
+def _prozess_node_farbe(qm, status, besucht):
+    if status == qm.status:
+        return "#E45756" if status == QMStatus.ABGEBROCHEN.value else "#F58518"
+    if status in besucht:
+        return "#54A24B"
+    return None  # noch offen - bleibt weiss
+
+
+def render_prozess_uebersicht(qm):
+    # Kompakte, rein lineare Ansicht: nur Erfassen -> Abgeschlossen, ohne
+    # Nebenzustände/Schlaufen - Platz direkt in der Detailansicht. Die vollständige
+    # Karte mit Pausiert/Abgebrochen/Wiedereröffnet gibt es im Tab "Ablauf".
+    aktueller_hauptschritt = HAUPTPFAD_ANZEIGE_STATUS.get(qm.status, qm.status)
+    besucht = {QMStatus.NEU.value} | {h.neuer_wert for h in qm.history if h.neuer_wert in PROZESS_HAUPTPFAD}
+    gegangene_kanten = {(h.alter_wert, h.neuer_wert) for h in qm.history if h.alter_wert and h.neuer_wert}
+
+    zeilen = [
+        "digraph {", "rankdir=LR;", 'bgcolor="transparent"; nodesep=0.2; ranksep=1.7;',
+        'node [shape=box, style="rounded,filled", fontname="Arial", fontsize=8, margin="0.04,0.02"];',
+        'edge [color="#cccccc", arrowsize=0.5, penwidth=0.8];',
+    ]
+    for status in PROZESS_HAUPTPFAD:
+        label = f"{STATUS_ICON.get(status, '')}\\n{status}"
+        aktiv = status == aktueller_hauptschritt and qm.status not in (QMStatus.ABGEBROCHEN.value,)
+        farbe = ("#F58518" if aktiv else None) or _prozess_node_farbe(qm, status, besucht)
+        if farbe:
+            zeilen.append(f'"{status}" [label="{label}", fillcolor="{farbe}", color="{farbe}", fontcolor="white"];')
+        else:
+            zeilen.append(f'"{status}" [label="{label}", fillcolor="white", color="#999999", fontcolor="#555555"];')
+    for von, ziel in HAUPTPFAD_KANTEN:
+        if (von, ziel) in gegangene_kanten:
+            zeilen.append(f'"{von}" -> "{ziel}" [color="#4C78A8", penwidth=1.6, arrowsize=0.6];')
+        else:
+            zeilen.append(f'"{von}" -> "{ziel}";')
+    zeilen.append("}")
+
+    st.graphviz_chart("\n".join(zeilen), width="stretch")
+    if qm.status == QMStatus.ABGEBROCHEN.value:
+        st.caption("❌ Abgebrochen - Details und vollständiger Ablauf im Tab \"Ablauf\".")
+    elif qm.status == QMStatus.PAUSIERT.value:
+        st.caption("⏸️ Aktuell pausiert - Details im Tab \"Ablauf\".")
+
+
+def render_prozess_diagramm(qm):
+    # Vollständiger Prozessgraph (alle Status + alle erlaubten Übergänge aus
+    # VALID_TRANSITIONS) - einfache Schritte von oben nach unten, ohne Bahnen.
+    # Farbe zeigt erledigt/aktuell/offen, die blaue Linie den tatsächlich
+    # gegangenen Weg dieses QMs.
+    besucht = {QMStatus.NEU.value} | {h.neuer_wert for h in qm.history if h.neuer_wert}
+    gegangene_kanten = {(h.alter_wert, h.neuer_wert) for h in qm.history if h.alter_wert and h.neuer_wert}
+
+    zeilen = [
+        "digraph {", "rankdir=TB;", 'bgcolor="transparent"; nodesep=0.25; ranksep=0.3;',
+        'node [fontname="Arial", fontsize=8, margin="0.04,0.02", fixedsize=false, width=0, height=0];',
+        'edge [color="#cccccc", arrowsize=0.5, fontsize=8, penwidth=0.8];',
+    ]
+
+    for status in [s.value for s in QMStatus]:
+        icon = STATUS_ICON.get(status, "")
+        ereignis = status_ereignis(qm, status)
+        label = f"{icon}\\n{status}" + (f"\\n{ereignis.timestamp:%d.%m.%y}" if ereignis else "")
+        form = "circle" if status == QMStatus.NEU.value else "doublecircle" if status in (QMStatus.ABGESCHLOSSEN.value, QMStatus.ABGEBROCHEN.value) else "box"
+        stil = "filled" if form == "box" else "filled,bold"
+        farbe = _prozess_node_farbe(qm, status, besucht)
+        if farbe:
+            zeilen.append(f'"{status}" [label="{label}", shape={form}, style="{stil}", fillcolor="{farbe}", color="{farbe}", fontcolor="white"];')
+        else:
+            zeilen.append(f'"{status}" [label="{label}", shape={form}, style="{stil}", fillcolor="white", color="#999999", fontcolor="#555555"];')
+
+    rueckwaerts = {(QMStatus.PAUSIERT.value, QMStatus.IN_BEARBEITUNG.value), (QMStatus.WIEDEREROEFFNET.value, QMStatus.IN_PRUEFUNG.value)}
+    for von, ziele in VALID_TRANSITIONS.items():
+        for ziel in ziele:
+            attrs = []
+            if (von, ziel) in gegangene_kanten:
+                attrs += ['color="#4C78A8"', "penwidth=1.6", "arrowsize=0.6"]
+            if (von, ziel) in HAUPTPFAD_KANTEN:
+                attrs.append("weight=10")
+            if (von, ziel) in rueckwaerts:
+                attrs.append("constraint=false")
+            attr_text = f" [{', '.join(attrs)}]" if attrs else ""
+            zeilen.append(f'"{von}" -> "{ziel}"{attr_text};')
+    zeilen.append("}")
+
+    st.graphviz_chart("\n".join(zeilen), width=280)
+    st.caption("🟠 aktueller Schritt · 🟢 bereits durchlaufen · ⚪ noch offen · blaue Linie = tatsächlicher Weg dieses QMs")
+
+
 def render_verlauf(qm):
+    # Timeline aller Ereignisse - Statuswechsel und Zuweisungen zeigen explizit
+    # "von -> zu", damit Personenwechsel sofort auffallen.
     if not qm.history:
         st.info("Keine Historie vorhanden.")
     for h in qm.history:
-        st.markdown(f"**{h.timestamp:%d.%m.%Y %H:%M}** – {h.details} _(von {h.user})_")
+        icon = VERLAUF_ICON.get(h.typ, "📌")
+        with st.container(border=True):
+            st.caption(f"{h.timestamp:%d.%m.%Y %H:%M} · {h.user}")
+            if h.typ == "zugewiesen":
+                st.write(f"{icon} Zuweisung: {h.alter_wert or 'niemand'} → **{h.neuer_wert}**")
+            elif h.typ == "status_geaendert":
+                von = f"{STATUS_ICON.get(h.alter_wert, '')} {h.alter_wert}"
+                zu = f"{STATUS_ICON.get(h.neuer_wert, '')} {h.neuer_wert}"
+                st.write(f"{icon} Status: {von} → **{zu}**")
+            else:
+                st.write(f"{icon} {h.details}")
 
 
 def render_kommentare(qm):
@@ -614,14 +755,7 @@ def zeige_details(qm_id):
         st.error("QM nicht gefunden.")
         return
 
-    kopf, taste = st.columns([5, 1])
-    kopf.subheader(f"{qm.qm_nummer} – {qm.titel}")
-    if hat_recht(RECHTE.BEARBEITEN):
-        label = "👁️ Ansehen" if st.session_state.detail_bearbeiten else "✏️ Bearbeiten"
-        if taste.button(label, key=f"toggle_edit_{qm.qm_id}", use_container_width=True):
-            st.session_state.detail_bearbeiten = not st.session_state.detail_bearbeiten
-            st.rerun()
-
+    st.subheader(f"{qm.qm_nummer} – {qm.titel}")
     st.caption(qm.beschreibung)
     render_kurzfakten(qm)
 
@@ -632,13 +766,23 @@ def zeige_details(qm_id):
             uebernehmen(qm)
             st.rerun()
 
-    st.divider()
+    render_prozess_uebersicht(qm)
+
+    _, taste = st.columns([5, 1])
+    if hat_recht(RECHTE.BEARBEITEN):
+        label = "👁️ Ansehen" if st.session_state.detail_bearbeiten else "✏️ Bearbeiten"
+        if taste.button(label, key=f"toggle_edit_{qm.qm_id}", use_container_width=True):
+            st.session_state.detail_bearbeiten = not st.session_state.detail_bearbeiten
+            st.rerun()
+
     editierbar = hat_recht(RECHTE.BEARBEITEN) and st.session_state.detail_bearbeiten
-    tab_namen = [f"{STATUS_ICON.get(status, '')} {status}" for status in STATUS_FELDER] + ["💬 Kommentare", "📜 Verlauf"]
+    tab_namen = [f"{STATUS_ICON.get(status, '')} {status}" for status in STATUS_FELDER] + ["🗺️ Ablauf", "💬 Kommentare", "📜 Verlauf"]
     tabs = st.tabs(tab_namen)
     for tab, (status, felder) in zip(tabs, STATUS_FELDER.items()):
         with tab:
             render_gruppe_tab(qm, status, felder, editierbar)
+    with tabs[-3]:
+        render_prozess_diagramm(qm)
     with tabs[-2]:
         render_kommentare(qm)
     with tabs[-1]:
@@ -651,15 +795,281 @@ ALT_SCHWELLE_TAGE = 14
 SLA_TAGE_KUNDE = 5
 
 
-def status_zeitpunkt(qm, status_wert):
+def terminal_zeitpunkt(qm):
+    return status_zeitpunkt(qm, QMStatus.BEHOBEN.value) or status_zeitpunkt(qm, QMStatus.ABGESCHLOSSEN.value)
+
+
+def fall_ende(qm):
+    # Wie terminal_zeitpunkt, aber auch Abgebrochen zählt als Fallende (für Falldauer/Process Mining -
+    # separat gehalten, damit bestehendes SLA/Zeitverlauf-Verhalten unverändert bleibt).
+    return (
+        status_zeitpunkt(qm, QMStatus.ABGESCHLOSSEN.value)
+        or status_zeitpunkt(qm, QMStatus.BEHOBEN.value)
+        or status_zeitpunkt(qm, QMStatus.ABGEBROCHEN.value)
+    )
+
+
+# History-Eintragstypen, die einen echten Statuswechsel dokumentieren (im Gegensatz zu
+# z.B. Zuweisungs- oder Prioritätsänderungen, die ebenfalls alter_wert/neuer_wert setzen).
+STATUS_AENDERUNGS_TYPEN = {
+    HistoryEntryType.STATUS_GEAENDERT.value, HistoryEntryType.PAUSIERT.value,
+    HistoryEntryType.FORTGESETZT.value, HistoryEntryType.WIEDEREROEFFNET.value,
+    HistoryEntryType.ABGEBROCHEN.value,
+}
+
+
+def aktivitaeten_verlauf(qm):
+    # (Status, Zeitpunkt-des-Erreichens) je Schritt, chronologisch - Neu + jeder
+    # tatsächliche Statuswechsel. Grundlage für Sequenz UND Verweildauer je Schritt.
+    verlauf = [(QMStatus.NEU.value, qm.erstellt_am)]
     for h in qm.history:
-        if h.neuer_wert == status_wert:
-            return h.timestamp
+        if h.typ in STATUS_AENDERUNGS_TYPEN and h.alter_wert and h.neuer_wert:
+            verlauf.append((h.neuer_wert, h.timestamp))
+    return verlauf
+
+
+def aktivitaeten_sequenz(qm):
+    return [status for status, _ in aktivitaeten_verlauf(qm)]
+
+
+def fall_dauer_stunden(qm, jetzt):
+    ende = fall_ende(qm) or jetzt
+    return (ende - qm.erstellt_am).total_seconds() / 3600
+
+
+def hat_self_loop(sequenz):
+    return any(a == b for a, b in zip(sequenz, sequenz[1:]))
+
+
+def hat_loop(sequenz):
+    return len(set(sequenz)) < len(sequenz)
+
+
+def ist_rework(qm):
+    return any(
+        h.typ in (HistoryEntryType.PAUSIERT.value, HistoryEntryType.WIEDEREROEFFNET.value)
+        for h in qm.history
+    )
+
+
+def ressourcen_anzahl(qm_liste):
+    ressourcen = {h.user for qm in qm_liste for h in qm.history if h.user}
+    return len(ressourcen)
+
+
+def berechne_varianten(qm_liste):
+    zaehler = {}
+    for qm in qm_liste:
+        variante = " → ".join(aktivitaeten_sequenz(qm))
+        zaehler[variante] = zaehler.get(variante, 0) + 1
+    return pd.Series(zaehler, dtype=int).sort_values(ascending=False)
+
+
+def berechne_dfg(qm_liste):
+    kanten = {}
+    for qm in qm_liste:
+        sequenz = aktivitaeten_sequenz(qm)
+        for a, b in zip(sequenz, sequenz[1:]):
+            kanten[(a, b)] = kanten.get((a, b), 0) + 1
+    return kanten
+
+
+def berechne_start_end_zaehler(qm_liste):
+    start_zaehler, end_zaehler = {}, {}
+    for qm in qm_liste:
+        sequenz = aktivitaeten_sequenz(qm)
+        start_zaehler[sequenz[0]] = start_zaehler.get(sequenz[0], 0) + 1
+        if fall_ende(qm):
+            end_zaehler[sequenz[-1]] = end_zaehler.get(sequenz[-1], 0) + 1
+    return start_zaehler, end_zaehler
+
+
+def render_dfg(qm_liste, kanten, ausgewaehlt=None):
+    # Interaktiver Prozessgraph (Plotly statt Graphviz): Knoten sind echte,
+    # klickbare Marker (st.plotly_chart mit on_select) - ein Klick liefert den
+    # angeklickten Schritt zurück, damit die Detailanzeige links reagieren kann.
+    if not kanten:
+        st.info("Keine Daten für den Prozessgraph.")
+        return None
+
+    aktivitaeten = sorted({s for kante in kanten for s in kante})
+    start_zaehler, end_zaehler = berechne_start_end_zaehler(qm_liste)
+
+    nachfolger = {}
+    for a, b in kanten:
+        nachfolger.setdefault(a, set()).add(b)
+
+    layer = {s: 1 for s in start_zaehler}
+    besucht = set(layer)
+    frontier = list(layer)
+    while frontier:
+        neue_frontier = []
+        for a in frontier:
+            for b in nachfolger.get(a, ()):
+                if b not in besucht:
+                    besucht.add(b)
+                    layer[b] = layer[a] + 1
+                    neue_frontier.append(b)
+        frontier = neue_frontier
+    for a in aktivitaeten:
+        layer.setdefault(a, 1)
+    max_layer = max(layer.values())
+
+    je_layer = {}
+    for a in aktivitaeten:
+        je_layer.setdefault(layer[a], []).append(a)
+
+    pos = {}
+    max_pro_layer = 1
+    for l, namen in je_layer.items():
+        namen.sort()
+        n = len(namen)
+        max_pro_layer = max(max_pro_layer, n)
+        for i, name in enumerate(namen):
+            pos[name] = (i - (n - 1) / 2, -l)
+    pos["__start__"] = (0, 0)
+    pos["__end__"] = (0, -(max_layer + 1))
+
+    akzent, dunkel = "#CC785C", "#3D3929"
+    max_kante = max(kanten.values())
+    annotationen = []
+
+    def pfeil(von, nach, breite, farbe, opazitaet):
+        x0, y0 = pos[von]
+        x1, y1 = pos[nach]
+        annotationen.append(dict(
+            x=x1, y=y1, ax=x0, ay=y0, xref="x", yref="y", axref="x", ayref="y",
+            showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=breite, arrowcolor=farbe,
+            opacity=opazitaet, standoff=26, startstandoff=26,
+        ))
+
+    for status, n in start_zaehler.items():
+        pfeil("__start__", status, 1.5, dunkel, 0.6)
+    for (a, b), n in kanten.items():
+        pfeil(a, b, 1.5 + 3.5 * (n / max_kante), akzent, 0.85)
+        mx, my = (pos[a][0] + pos[b][0]) / 2, (pos[a][1] + pos[b][1]) / 2
+        annotationen.append(dict(
+            x=mx, y=my, text=str(n), showarrow=False, font=dict(size=11, color="#8A5A46"),
+            bgcolor="rgba(250,249,245,0.85)",
+        ))
+    for status, n in end_zaehler.items():
+        pfeil(status, "__end__", 1.5, dunkel, 0.6)
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=[pos["__start__"][0], pos["__end__"][0]], y=[pos["__start__"][1], pos["__end__"][1]],
+        mode="markers+text", text=["Start", "Ende"], textposition="middle center",
+        textfont=dict(color="white", size=11),
+        marker=dict(size=46, color=dunkel, line=dict(width=0)),
+        hoverinfo="text", customdata=[[None], [None]], showlegend=False,
+    ))
+    fig.add_trace(go.Scatter(
+        x=[pos[a][0] for a in aktivitaeten],
+        y=[pos[a][1] for a in aktivitaeten],
+        mode="markers+text",
+        text=[f"{STATUS_ICON.get(a, '')} {a}" for a in aktivitaeten],
+        textposition="middle center", textfont=dict(size=11, color=dunkel),
+        marker=dict(
+            size=58, color="#F0EEE6", symbol="square",
+            line=dict(
+                color=[dunkel if a == ausgewaehlt else akzent for a in aktivitaeten],
+                width=[4 if a == ausgewaehlt else 2 for a in aktivitaeten],
+            ),
+        ),
+        customdata=[[a] for a in aktivitaeten], hoverinfo="text", showlegend=False,
+    ))
+
+    fig.update_layout(
+        annotations=annotationen,
+        xaxis=dict(visible=False, range=[-(max_pro_layer / 2 + 1), max_pro_layer / 2 + 1]),
+        yaxis=dict(visible=False, range=[-(max_layer + 1.5), 0.5]),
+        margin=dict(l=10, r=10, t=10, b=10),
+        height=int(105 * (max_layer + 2)),
+        plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+        clickmode="event+select",
+    )
+
+    event = st.plotly_chart(
+        fig, on_select="rerun", selection_mode="points", key="prozess_dfg_klick",
+    )
+    if event and event.selection and event.selection.points:
+        for punkt in event.selection.points:
+            customdata = punkt.get("customdata")
+            if customdata and customdata[0]:
+                return customdata[0]
     return None
 
 
-def terminal_zeitpunkt(qm):
-    return status_zeitpunkt(qm, QMStatus.BEHOBEN.value) or status_zeitpunkt(qm, QMStatus.ABGESCHLOSSEN.value)
+def schritt_statistik(qm_liste, schritt, jetzt):
+    verweildauern_h = []
+    ressourcen = set()
+    aktuelle_faelle = []
+    for qm in qm_liste:
+        verlauf = aktivitaeten_verlauf(qm)
+        for i, (status, ts) in enumerate(verlauf):
+            if status == schritt:
+                ende = verlauf[i + 1][1] if i + 1 < len(verlauf) else jetzt
+                verweildauern_h.append((ende - ts).total_seconds() / 3600)
+        for h in qm.history:
+            if h.neuer_wert == schritt and h.user:
+                ressourcen.add(h.user)
+        if qm.status == schritt:
+            aktuelle_faelle.append(qm)
+    return verweildauern_h, ressourcen, aktuelle_faelle
+
+
+def render_schritt_detail(qm_liste, schritt, kanten, jetzt):
+    icon = STATUS_ICON.get(schritt, "")
+    st.markdown(f"**{icon} {schritt}**")
+    verweildauern_h, ressourcen, aktuelle_faelle = schritt_statistik(qm_liste, schritt, jetzt)
+
+    k1, k2 = st.columns(2)
+    k1.metric("Fälle", len(verweildauern_h))
+    k2.metric("Ø Dauer", f"{statistics.mean(verweildauern_h) / 24:.1f} Tg" if verweildauern_h else "–")
+    k3, k4 = st.columns(2)
+    k3.metric("Aktuell hier", len(aktuelle_faelle))
+    k4.metric("Ressourcen", len(ressourcen))
+
+    eingehend = sorted(((a, n) for (a, b), n in kanten.items() if b == schritt), key=lambda kv: -kv[1])
+    ausgehend = sorted(((b, n) for (a, b), n in kanten.items() if a == schritt), key=lambda kv: -kv[1])
+    if eingehend or ausgehend:
+        e_spalte, a_spalte = st.columns(2)
+        with e_spalte:
+            if eingehend:
+                st.caption("Eingehend")
+                for von, n in eingehend:
+                    st.caption(f"⬅️ {von} ({n})")
+        with a_spalte:
+            if ausgehend:
+                st.caption("Ausgehend")
+                for ziel, n in ausgehend:
+                    st.caption(f"➡️ {ziel} ({n})")
+
+    if aktuelle_faelle:
+        st.caption("Aktuell in diesem Schritt")
+        for qm in aktuelle_faelle:
+            st.caption(f"{qm.qm_nummer} – {qm.titel}")
+
+
+def render_varianten_chart(qm_liste, top_n=10):
+    varianten = berechne_varianten(qm_liste).head(top_n)
+    if varianten.empty:
+        st.info("Keine Varianten gefunden.")
+        return
+    st.bar_chart(varianten, horizontal=True, x_label="Anzahl Fälle", y_label="")
+
+
+def render_dauer_zeitverlauf(qm_liste):
+    jetzt = datetime.now()
+    daten = [
+        {"Abgeschlossen am": fall_ende(qm).date(), "Ø Falldauer (Tage)": fall_dauer_stunden(qm, jetzt) / 24}
+        for qm in qm_liste if fall_ende(qm)
+    ]
+    if not daten:
+        st.info("Noch keine abgeschlossenen Fälle für den Zeitverlauf.")
+        return
+    df = pd.DataFrame(daten).groupby("Abgeschlossen am").mean()
+    st.line_chart(df)
 
 
 def pie_chart(werte, spaltenname):
@@ -715,55 +1125,107 @@ def view_statistik():
 
     mittel = lambda werte: sum(werte) / len(werte) if werte else None
 
-    st.subheader("Auf einen Blick")
-    k1, k2, k3, k4 = st.columns(4)
-    k1.metric("Offene QMs", len(offene))
-    k2.metric(f"Alte unbearb. Fälle (>{ALT_SCHWELLE_TAGE}d)", len(alte_unbearbeitete))
-    k3.metric("Sicherheitsrelevant offen", len(sicherheitsrelevant_offen))
-    k4.metric(f"Abgeschlossen (letzte {ALT_SCHWELLE_TAGE}d)", len(kuerzlich_erledigt))
+    tab_kunde, tab_intern, tab_prozess = st.tabs(["🤝 Business & Kunde", "🏢 Interne KPIs", "🔬 Prozessanalyse"])
 
-    k5, k6, k7, k8 = st.columns(4)
-    reaktion = mittel(reaktionszeiten_h)
-    k5.metric("Ø Reaktionszeit bis Zugewiesen", f"{reaktion:.1f} h" if reaktion is not None else "–")
-    rueckmeldung = mittel(rueckmeldungszeiten_h)
-    k6.metric("Ø Zeit bis 1. Rückmeldung", f"{rueckmeldung:.1f} h" if rueckmeldung is not None else "–")
-    bearbeitung = mittel(bearbeitungszeiten_h)
-    k7.metric("Ø Bearbeitungszeit", f"{bearbeitung / 24:.1f} Tage" if bearbeitung is not None else "–")
-    k8.metric("Kundenzufriedenheit (Proxy)", f"{sla_getroffen}/{sla_relevant} SLA" if sla_relevant else "–")
-    st.caption(
-        f"Kundenzufriedenheit ist ein Näherungswert: Anteil der QMs mit Kundenrückmeldung nötig, "
-        f"die innert {SLA_TAGE_KUNDE} Tagen abgeschlossen wurden - es gibt keine echte Zufriedenheitsmessung."
-    )
+    with tab_kunde:
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Kundenzufriedenheit (Proxy)", f"{sla_getroffen}/{sla_relevant} SLA" if sla_relevant else "–")
+        k2.metric("Sicherheitsrelevant offen", len(sicherheitsrelevant_offen))
+        k3.metric(f"Abgeschlossen (letzte {ALT_SCHWELLE_TAGE}d)", len(kuerzlich_erledigt))
+        rueckmeldung = mittel(rueckmeldungszeiten_h)
+        k4.metric("Ø Zeit bis 1. Rückmeldung", f"{rueckmeldung:.1f} h" if rueckmeldung is not None else "–")
+        st.caption(
+            f"Kundenzufriedenheit ist ein Näherungswert: Anteil der QMs mit Kundenrückmeldung nötig, "
+            f"die innert {SLA_TAGE_KUNDE} Tagen abgeschlossen wurden - es gibt keine echte Zufriedenheitsmessung."
+        )
 
-    st.divider()
-    st.subheader("Zeitverlauf")
-    verlauf = pd.DataFrame({
-        "Neu erfasst": wochen_zaehlung([qm.erstellt_am for qm in qm_liste]),
-        "Abgeschlossen": wochen_zaehlung([terminal_zeitpunkt(qm) for qm in qm_liste if terminal_zeitpunkt(qm)]),
-    }).fillna(0)
-    st.area_chart(verlauf)
+        st.divider()
+        st.subheader("Verteilungen")
+        p1, p2 = st.columns(2)
+        with p1:
+            st.caption("Nach Priorität")
+            pie_chart(pd.Series([qm.prioritaet for qm in qm_liste]).value_counts(), "Priorität")
+        with p2:
+            st.caption("Nach Kategorie")
+            pie_chart(pd.Series([qm.hauptkategorie for qm in qm_liste]).value_counts(), "Kategorie")
 
-    st.divider()
-    st.subheader("Verteilungen")
-    p1, p2, p3 = st.columns(3)
-    with p1:
-        st.caption("Nach Status")
-        pie_chart(pd.Series([qm.status for qm in qm_liste]).value_counts(), "Status")
-    with p2:
-        st.caption("Nach Kategorie")
-        pie_chart(pd.Series([qm.hauptkategorie for qm in qm_liste]).value_counts(), "Kategorie")
-    with p3:
-        st.caption("Nach Priorität")
-        pie_chart(pd.Series([qm.prioritaet for qm in qm_liste]).value_counts(), "Priorität")
+    with tab_intern:
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Offene QMs", len(offene))
+        k2.metric(f"Alte unbearb. Fälle (>{ALT_SCHWELLE_TAGE}d)", len(alte_unbearbeitete))
+        reaktion = mittel(reaktionszeiten_h)
+        k3.metric("Ø Reaktionszeit bis Zugewiesen", f"{reaktion:.1f} h" if reaktion is not None else "–")
+        bearbeitung = mittel(bearbeitungszeiten_h)
+        k4.metric("Ø Bearbeitungszeit", f"{bearbeitung / 24:.1f} Tage" if bearbeitung is not None else "–")
 
-    st.divider()
-    st.subheader("Offene QMs pro Abteilung")
-    workload = {}
-    for qm in offene:
-        ziel_abt = KATEGORIE_ABTEILUNG.get(qm.hauptkategorie)
-        name = ziel_abt.value["name"] if ziel_abt else "Andere"
-        workload[name] = workload.get(name, 0) + 1
-    st.bar_chart(pd.Series(workload, name="Offene QMs"))
+        st.divider()
+        st.subheader("Zeitverlauf")
+        verlauf = pd.DataFrame({
+            "Neu erfasst": wochen_zaehlung([qm.erstellt_am for qm in qm_liste]),
+            "Abgeschlossen": wochen_zaehlung([terminal_zeitpunkt(qm) for qm in qm_liste if terminal_zeitpunkt(qm)]),
+        }).fillna(0)
+        st.area_chart(verlauf)
+
+        st.divider()
+        c1, c2 = st.columns([1, 1])
+        with c1:
+            st.subheader("Offene QMs pro Abteilung")
+            workload = {}
+            for qm in offene:
+                ziel_abt = KATEGORIE_ABTEILUNG.get(qm.hauptkategorie)
+                name = ziel_abt.value["name"] if ziel_abt else "Andere"
+                workload[name] = workload.get(name, 0) + 1
+            st.bar_chart(pd.Series(workload, name="Offene QMs"))
+        with c2:
+            st.subheader("Nach Status")
+            pie_chart(pd.Series([qm.status for qm in qm_liste]).value_counts(), "Status")
+
+    with tab_prozess:
+        st.caption("Process Mining auf Basis des QM-Verlaufs: jeder QM ist ein Fall, jeder Statuswechsel eine Aktivität.")
+        sequenzen = [aktivitaeten_sequenz(qm) for qm in qm_liste]
+        dauern_tage = [fall_dauer_stunden(qm, heute) / 24 for qm in qm_liste]
+        self_loop_anteil = sum(hat_self_loop(s) for s in sequenzen) / len(sequenzen) if sequenzen else 0
+        loop_anteil = sum(hat_loop(s) for s in sequenzen) / len(sequenzen) if sequenzen else 0
+        rework_anteil = sum(ist_rework(qm) for qm in qm_liste) / len(qm_liste) if qm_liste else 0
+
+        k1, k2, k3, k4, k5, k6 = st.columns(6)
+        k1.metric("Ø Falldauer (Median)", f"{statistics.median(dauern_tage):.1f} d" if dauern_tage else "–")
+        k2.metric("Ø Falldauer (Mittelwert)", f"{statistics.mean(dauern_tage):.1f} d" if dauern_tage else "–")
+        k3.metric("Self-Loop-Fälle", f"{self_loop_anteil:.0%}")
+        k4.metric("Fälle mit Schlaufe", f"{loop_anteil:.0%}")
+        k5.metric("Rework-Fälle", f"{rework_anteil:.0%}")
+        k6.metric("Ressourcen", ressourcen_anzahl(qm_liste))
+
+        varianten = berechne_varianten(qm_liste)
+        aktivitaeten_beobachtet = {s for seq in sequenzen for s in seq}
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Varianten", len(varianten))
+        m2.metric("Fälle", len(qm_liste))
+        m3.metric("Aktivitäten", len(aktivitaeten_beobachtet))
+
+        st.divider()
+        st.subheader("Entdeckter Prozessgraph")
+        st.caption("Klicke auf einen Schritt im Graph oder wähle ihn links aus, um Details zu sehen.")
+        schritte_reihenfolge = [s.value for s in QMStatus]
+        alle_schritte = sorted(aktivitaeten_beobachtet, key=schritte_reihenfolge.index)
+        kanten = berechne_dfg(qm_liste)
+        col_detail, col_graph = st.columns([1, 2])
+        with col_graph:
+            schritt_klick = render_dfg(qm_liste, kanten, ausgewaehlt=st.session_state.get("prozess_schritt_wahl"))
+        with col_detail:
+            if schritt_klick:
+                st.session_state["prozess_schritt_wahl"] = schritt_klick
+            schritt_wahl = st.selectbox("Schritt für Details wählen", alle_schritte, key="prozess_schritt_wahl")
+            render_schritt_detail(qm_liste, schritt_wahl, kanten, heute)
+
+        st.divider()
+        g1, g2 = st.columns(2)
+        with g1:
+            st.subheader("Varianten (Häufigkeit)")
+            render_varianten_chart(qm_liste)
+        with g2:
+            st.subheader("Falldauer im Zeitverlauf")
+            render_dauer_zeitverlauf(qm_liste)
 
 
 # ---------- Planung ----------
